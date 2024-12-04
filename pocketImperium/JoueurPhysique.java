@@ -90,7 +90,7 @@ public class JoueurPhysique extends Joueur{
 
         System.out.println("Vous avez choisi le secteur : " + secteurChoisi.getNom());
 
-*/
+
         // Calcul du score en vérifiant l'occupant
         public void CalculScore(Secteur secteur) {
             for (Hex hex : secteur.getListeHex()) {
@@ -107,7 +107,7 @@ public class JoueurPhysique extends Joueur{
 
         System.out.println("Score actuel : " + score);
     }
-
+*/
 
     public void choisirSecteurEtScore(){
         System.out.println(this.getNom()+"  a choisi un secteur");
