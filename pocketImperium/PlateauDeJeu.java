@@ -35,7 +35,7 @@ public class PlateauDeJeu {
 		}
 		//on initialise leur liste de Hex voisins
 		//for (Hex hex : this.listeHex) {
-		//	if ()
+		//	if (hex.getc)
 		//}
 
 		this.listeHex = listeHex;

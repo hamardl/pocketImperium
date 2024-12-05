@@ -65,6 +65,10 @@ public class Hex {
             listVaisseaux.remove(listVaisseaux.size() - 1); // Supprime le dernier vaisseau
         }
     }
+    //get coordonnes
+    public ArrayList<Integer> getCoordonnees(){
+
+    }
 
     //méthode qui renvoie l'occupant du hex
     public Joueur getOccupant() {
