@@ -56,6 +56,7 @@ public class PlateauDeJeu {
 				}
 			}
 
+
 			// Ajouter les voisins au Hex actuel
 			hex.setListeHexesVoisins(voisins);
 		}
