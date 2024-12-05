@@ -20,9 +20,6 @@ public class JoueurVirtuel extends Joueur{
     public void attaquerHex() {
         System.out.println(this.getNom()+" a attaqué un hex");
     }
-    public void choisirSecteurEtScore(){
-        System.out.println(this.getNom()+"  a choisi un secteur");
-    }
 
     public void ordonnerCarte(){
         ArrayList<Carte> liste1 = new ArrayList<>();
@@ -41,6 +38,6 @@ public class JoueurVirtuel extends Joueur{
         int indexAleatoire = random.nextInt(listeSecteurs.size()); // Choisir un indice aléatoire
         return listeSecteurs.get(indexAleatoire); // Retourner le secteur choisi
     }
-    
+
 
 }

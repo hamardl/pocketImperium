@@ -67,8 +67,6 @@ public class JoueurPhysique extends Joueur{
         }
     }
 
-
-
 	public Secteur choisirSecteur(ArrayList<Secteur> listeSecteurs) {
         System.out.print("Entrez le nom du secteur : ");
         String nomChoisi;
@@ -92,7 +90,6 @@ public class JoueurPhysique extends Joueur{
         return secteurChoisi;
     }
 
-	
 	public void ajouterVaisseau() {
         System.out.println(this.getNom()+"  a ajouté un vaisseau");
 		

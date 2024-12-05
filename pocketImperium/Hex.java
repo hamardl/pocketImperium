@@ -67,7 +67,7 @@ public class Hex {
     }
     //get coordonnes
     public ArrayList<Integer> getCoordonnees(){
-
+        return this.coordonnees;
     }
 
     //méthode qui renvoie l'occupant du hex

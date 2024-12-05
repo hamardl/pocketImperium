@@ -13,7 +13,6 @@ public abstract class Joueur {
     private List<Vaisseau> listeVaisseaux;
     private ArrayList<Carte> listeDeCarteOrdonnee;
     private int ordreDeJeu;
-    private ArrayList<Hex> listeHex;
     private ArrayList<Joueur> listeJoueur;
 	
     // Constructeur avec paramètres
@@ -25,7 +24,7 @@ public abstract class Joueur {
         this.listeVaisseaux = new ArrayList<>();
         this.listeDeCarteOrdonnee = new ArrayList<>();
         this.ordreDeJeu = ordreDeJeu;
-        this.listeHex = new ArrayList<>();
+
     }
 
         // Getters et Setters
@@ -144,10 +143,7 @@ public abstract class Joueur {
     }
 
     	
-    	//compter le nombre de vaissezau à chaque fin de tour si =0 alors partie finie
-    	public void compterVaisseaux() {
-    		
-    	}
+
 
     // Calcul du score en vérifiant l'occupant
     public void calculScore(Secteur secteur) {
@@ -164,7 +160,10 @@ public abstract class Joueur {
         System.out.println("Score actuel : " + score);
     }
 
+    //compter le nombre de vaissezau à chaque fin de tour si =0 alors partie finie
+    public void compterVaisseaux() {
 
+    }
 
 
 	public static void main(String[] args) {
