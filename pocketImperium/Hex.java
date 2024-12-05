@@ -8,15 +8,17 @@ public class Hex {
     private ArrayList<Hex> listeHexesVoisins; // Liste des hexagones voisins
     private boolean estTriprim;              // Indique si l'hexagone est "Triprim"
     private int capacite;                    // Capacité de l'hexagone
-    private String couleur;                   // Statut de l'hexagone peut être une énuméraition
     private ArrayList<Vaisseau> listVaisseaux; // Liste des vaisseaux présents sur l'hexagone
+    private ArrayList<Integer> coordonnees;
 
     // Constructeur
-    public Hex(ArrayList<Hex> listeHexesVosins, int capacite) {
-        this.listeHexesVoisins = listeHexesVosins;
-        this.estTriprim = false;
-        this.capacite = capacite;
-        this.listVaisseaux = new ArrayList<>();
+    public Hex(ArrayList<Integer> coordonnees) {
+        this.coordonnees=coordonnees;
+        this.capacite=1;
+        this.estTriprim=false;
+        listVaisseaux=new ArrayList<>();
+        listeHexesVoisins=new ArrayList<>();
+
     }
 
     // Getters et Setters
@@ -24,8 +26,8 @@ public class Hex {
         return listeHexesVoisins;
     }
 
-    public void setListeHexesVoisins(ArrayList<Hex> listeHexesVoisins) {
-        this.listeHexesVoisins = listeHexesVoisins;
+    public void setListeHexesVoisins(ArrayList<Hex> listeHexesVosins) {
+        this.listeHexesVoisins = listeHexesVosins;
     }
 
     public boolean isEstTriprim() {
@@ -44,25 +46,8 @@ public class Hex {
         this.capacite = capacite;
     }
 
-    public String getCouleur() {
-        return couleur;
-    }
-
-    public void setCouleur(String couleur) {
-        this.couleur = couleur;
-    }
-
     public ArrayList<Vaisseau> getListVaisseaux() {
         return listVaisseaux;
-    }
-
-    public void setListVaisseaux(ArrayList<Vaisseau> listVaisseaux) {
-        this.listVaisseaux = listVaisseaux;
-    }
-
-    // Méthode pour ajouter un voisin
-    public void ajouterVoisin(Hex voisin) {
-        this.listeHexesVoisins.add(voisin);
     }
 
     // Méthode pour ajouter un vaisseau
@@ -81,8 +66,14 @@ public class Hex {
         }
     }
 
-    //méthode qui renvoie l'accupant du hex
-    public void getOccupant() {
-    	
+    //méthode qui renvoie l'occupant du hex
+    public Joueur getOccupant() {
+        for (Vaisseau vaisseau : listVaisseaux) {
+            if (vaisseau.getJoueur() != null) {
+                return vaisseau.getJoueur(); // Retourne le joueur du premier vaisseau trouvé
+            }
+        }
+        return null; // Si aucun joueur n'est trouvé
     }
+
 }

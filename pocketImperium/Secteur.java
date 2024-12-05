@@ -18,32 +18,9 @@ public class Secteur {
     public ArrayList<Hex> getListeHex() {
         return listeHex;
     }
+
     public String getNom() {
         return nom;
-    }
-
-    // Setter
-    public void setListeHex(ArrayList<Hex> listeHex) {
-        this.listeHex = listeHex;
-    }
-
-    // Méthode pour ajouter un Hex au secteur
-    public void ajouterHex(Hex hex) {
-        this.listeHex.add(hex);
-    }
-
-    // Méthode pour supprimer un Hex du secteur
-    public void retirerHex(Hex hex) {
-        this.listeHex.remove(hex);
-    }
-
-    // Méthode pour récupérer un Hex spécifique
-    public Hex obtenirHex(int index) {
-        if (index >= 0 && index < listeHex.size()) {
-            return listeHex.get(index);
-        } else {
-            throw new IndexOutOfBoundsException("Index invalide : " + index);
-        }
     }
 
     // Méthode pour vérifier si un Hex est dans le secteur
@@ -56,5 +33,9 @@ public class Secteur {
         for (Hex hex : listeHex) {
             System.out.println(hex);
         }
+    }
+
+    public String toString(){
+
     }
 }

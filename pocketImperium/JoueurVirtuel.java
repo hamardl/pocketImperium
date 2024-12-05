@@ -2,6 +2,7 @@ package pocketImperium;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class JoueurVirtuel extends Joueur{
 	
@@ -30,8 +31,15 @@ public class JoueurVirtuel extends Joueur{
         liste1.add(Carte.Exterminate);
         this.setListeDeCarteOrdonnee(liste1);
     }
-    public void choisirSecteur(){
+    public Secteur choisirSecteur(ArrayList<Secteur> listeSecteurs){
+        // Vérification si la liste n'est pas vide
+        if (listeSecteurs == null || listeSecteurs.isEmpty()) {
+            return null; // Ou vous pouvez choisir de lancer une exception si nécessaire
+        }
 
+        Random random = new Random();
+        int indexAleatoire = random.nextInt(listeSecteurs.size()); // Choisir un indice aléatoire
+        return listeSecteurs.get(indexAleatoire); // Retourner le secteur choisi
     }
     
 

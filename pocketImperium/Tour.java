@@ -46,16 +46,57 @@ public class Tour {
 				ArrayList<Joueur> joueursTries = new ArrayList<>(listeJoueur);
 				joueursTries.sort(Comparator.comparingInt(Joueur::getOrdreDeJeu)); // Tri croissant
 
+				Joueur joueurOccupantTriprim=null;
+				for (Hex hex : pdj.getListeHex()) {
+					// Vérifier si l'Hex est "TriPrim" et que l'occupant correspond au joueur
+					if (hex.isEstTriprim()) {
+						joueurOccupantTriprim=hex.getOccupant();
+					}
+				}
+				// Initialisation d'une liste pour suivre les secteurs déjà choisis
+				ArrayList<Secteur> secteursDejaChoisis = new ArrayList<>();
+
 				// Parcourir la liste triée et appeler choisirSecteur pour chaque joueur
 				for (Joueur joueur : joueursTries) {
+					if (joueur == joueurOccupantTriprim) {
+						System.out.println("C'est au tour de " + joueur.getNom() + " de choisir deux secteurs.");
 
-				/*
-				for (Hex hex : pdj.getListHex()) {
-					// Vérifier si l'Hex est "TriPrim" et que l'occupant correspond au joueur
-					if (hex.estTriPrim() && hex.getOccupant() == joueur)
-				*/
-					System.out.println("C'est au tour de " + joueur.getNom() + " de choisir un secteur.");
-					joueur.choisirSecteurEtScore(); // Appelle la méthode choisirSecteur
+						// Premier choix
+						Secteur secteur1;
+						do {
+							secteur1 = joueur.choisirSecteur(pdj.getListeSecteur()); // Appelle la méthode choisirSecteur
+							if (secteursDejaChoisis.contains(secteur1)) {
+								System.out.println("Ce secteur a déjà été choisi. Veuillez en choisir un autre.");
+							}
+						} while (secteursDejaChoisis.contains(secteur1));
+						secteursDejaChoisis.add(secteur1); // Ajoute le secteur choisi à la liste
+						joueur.calculScore(secteur1);
+
+						// Deuxième choix
+						Secteur secteur2;
+						do {
+							secteur2 = joueur.choisirSecteur(pdj.getListeSecteur()); // Appelle la méthode choisirSecteur
+							if (secteursDejaChoisis.contains(secteur2)) {
+								System.out.println("Ce secteur a déjà été choisi. Veuillez en choisir un autre.");
+							}
+						} while (secteursDejaChoisis.contains(secteur2));
+						secteursDejaChoisis.add(secteur2); // Ajoute le secteur choisi à la liste
+						joueur.calculScore(secteur2);
+
+					} else {
+						System.out.println("C'est au tour de " + joueur.getNom() + " de choisir un secteur.");
+
+						// Unique choix pour les autres joueurs
+						Secteur secteur;
+						do {
+							secteur = joueur.choisirSecteur(pdj.getListeSecteur()); // Appelle la méthode choisirSecteur
+							if (secteursDejaChoisis.contains(secteur)) {
+								System.out.println("Ce secteur a déjà été choisi. Veuillez en choisir un autre.");
+							}
+						} while (secteursDejaChoisis.contains(secteur));
+						secteursDejaChoisis.add(secteur); // Ajoute le secteur choisi à la liste
+						joueur.calculScore(secteur);
+					}
 				}
 				//switch l'ordre de Jeu
 				int odj = 0;

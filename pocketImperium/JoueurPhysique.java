@@ -33,7 +33,7 @@ public class JoueurPhysique extends Joueur{
         boolean carteValide = false;
 
         while (!carteValide) {
-            System.out.println("Entrez la " + ordinal(numeroCarte) + " carte : (Expander, Explorer, Exterminator)");
+            System.out.println("Entrez la " + ordinal(numeroCarte) + " carte : (Expand, Explore, Exterminate)");
             String saisie = scanner.nextLine().trim();
 
             // Vérifier si la saisie correspond à une carte valide
@@ -68,8 +68,8 @@ public class JoueurPhysique extends Joueur{
     }
 
 
-/*
-	public void choisirSecteurEtCaluclerScore(ArrayList<Secteur> listeSecteurs) {
+
+	public Secteur choisirSecteur(ArrayList<Secteur> listeSecteurs) {
         System.out.print("Entrez le nom du secteur : ");
         String nomChoisi;
         Secteur secteurChoisi = null;
@@ -89,29 +89,9 @@ public class JoueurPhysique extends Joueur{
         } while (secteurChoisi == null);
 
         System.out.println("Vous avez choisi le secteur : " + secteurChoisi.getNom());
-
-
-        // Calcul du score en vérifiant l'occupant
-        public void CalculScore(Secteur secteur) {
-            for (Hex hex : secteur.getListeHex()) {
-                if (hex.getOccupant().equals(this.getNom())) { // Vérification couleur
-                    int capacite = hex.getCapacite();
-                    if (capacite == 2) {
-                        score += 1;
-                    } else if (capacite == 3) {
-                        score += 2;
-                    }
-                }
-            }
-        }
-
-        System.out.println("Score actuel : " + score);
+        return secteurChoisi;
     }
-*/
 
-    public void choisirSecteurEtScore(){
-        System.out.println(this.getNom()+"  a choisi un secteur");
-    }
 	
 	public void ajouterVaisseau() {
         System.out.println(this.getNom()+"  a ajouté un vaisseau");

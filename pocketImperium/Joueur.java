@@ -99,7 +99,7 @@ public abstract class Joueur {
         public abstract void déplacer();
         public abstract void attaquerHex();
         public abstract void ordonnerCarte();
-        public abstract void choisirSecteurEtScore();
+        public abstract Secteur choisirSecteur(ArrayList<Secteur> listeSecteurs);
         
     	public void revelerCarte(ArrayList<Carte> listeDeCarteOrdonnee) {
 
@@ -148,6 +148,24 @@ public abstract class Joueur {
     	public void compterVaisseaux() {
     		
     	}
+
+    // Calcul du score en vérifiant l'occupant
+    public void calculScore(Secteur secteur) {
+        for (Hex hex : secteur.getListeHex()) {
+            if (hex.getOccupant().equals(this.getNom())) { // Vérification couleur
+                int capacite = hex.getCapacite();
+                if (capacite == 2) {
+                    score += 1;
+                } else if (capacite == 3) {
+                    score += 2;
+                }
+            }
+        }
+        System.out.println("Score actuel : " + score);
+    }
+
+
+
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
