@@ -82,7 +82,7 @@ public class JoueurPhysique extends Joueur{
                 }
             }
             if (secteurChoisi == null) {
-                System.out.println("Nom invalide. Essayez à nouveau.");
+                System.out.println("Nom invalide.Les options disponibles sont : Secteur1, Secteur2, etc jusqu'à 9. Essayez à nouveau.");
             }
         } while (secteurChoisi == null);
 
@@ -90,10 +90,49 @@ public class JoueurPhysique extends Joueur{
         return secteurChoisi;
     }
 
-	public void ajouterVaisseau() {
-        System.out.println(this.getNom()+"  a ajouté un vaisseau");
-		
-	}
+    public void ajouterVaisseau(ArrayList<Hex> listeHex) {
+        Scanner scanner = new Scanner(System.in);
+
+        // Vérification du nombre de vaisseaux du joueur
+        if (this.getListeVaisseaux().size() >= 15) {
+            System.out.println("Vous avez déjà 15 vaisseaux. Vous ne pouvez pas en ajouter davantage.");
+            return;
+        }
+
+        Hex hexChoisi = null;
+
+        while (true) {
+            System.out.println("Entrez les coordonnées de l'hexagone où vous souhaitez ajouter un vaisseau (format: x y):");
+            int x = scanner.nextInt();
+            int y = scanner.nextInt();
+
+            // Recherche de l'hex correspondant aux coordonnées
+            for (Hex hex : listeHex) {
+                if (hex.getCoordonnees().get(0) == x && hex.getCoordonnees().get(1) == y) {
+                    hexChoisi = hex;
+                    break;
+                }
+            }
+
+            if (hexChoisi == null) {
+                System.out.println("Aucun hexagone ne correspond à ces coordonnées. Veuillez réessayer.");
+            } else if (!this.getNom().equals(hexChoisi.getOccupant())) {
+                System.out.println("Cet hexagone n'est pas occupé par vous. Vous ne pouvez pas y ajouter de vaisseau. Veuillez réessayer.");
+            } else {
+                break; // Coordonnées valides et hex occupé par le joueur
+            }
+        }
+
+        // Création et ajout du vaisseau
+        Vaisseau nouveauVaisseau = new Vaisseau(this);
+        hexChoisi.getListVaisseaux().add(nouveauVaisseau);
+        this.getListeVaisseaux().add(nouveauVaisseau);
+
+        System.out.println("Un nouveau vaisseau a été ajouté sur l'hexagone " +
+                hexChoisi.getCoordonnees().get(0) + ", " +
+                hexChoisi.getCoordonnees().get(1) + ".");
+    }
+
 	public void déplacer() {
         System.out.println(this.getNom()+"  a déplacer une flotte");
 	}	
@@ -117,6 +156,7 @@ public class JoueurPhysique extends Joueur{
         joueur3.setListeJoueur(liste0);
 		Tour tour1= new Tour(liste0,1);
         PlateauDeJeu pdj = new PlateauDeJeu();
+
         tour1.gestionTour(pdj);
 
 	}

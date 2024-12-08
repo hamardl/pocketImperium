@@ -80,4 +80,51 @@ public class Hex {
         return null; // Si aucun joueur n'est trouvé
     }
 
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        // Ajouter les coordonnées de l'Hex
+        sb.append("Hex (")
+                .append("Coordonnées: ")
+                .append(coordonnees != null ? coordonnees : "[Non définies]")
+                .append(")\n");
+
+        // Ajouter l'information sur Triprim
+        sb.append("Est Triprim: ")
+                .append(estTriprim ? "Oui" : "Non")
+                .append("\n");
+
+        // Ajouter la capacité
+        sb.append("Capacité: ")
+                .append(capacite)
+                .append("\n");
+
+        // Ajouter les vaisseaux présents
+        sb.append("Vaisseaux présents (" + listVaisseaux.size() + "): ");
+        if (!listVaisseaux.isEmpty()) {
+            for (Vaisseau vaisseau : listVaisseaux) {
+                sb.append(vaisseau.getJoueur().getNom()).append(", ");
+            }
+            sb.setLength(sb.length() - 2); // Retirer la virgule et l'espace finaux
+        } else {
+            sb.append("Aucun");
+        }
+        sb.append("\n");
+
+        // Ajouter les coordonnées des voisins
+        sb.append("Voisins: ");
+        if (listeHexesVoisins != null && !listeHexesVoisins.isEmpty()) {
+            for (Hex voisin : listeHexesVoisins) {
+                sb.append(voisin.getCoordonnees()).append(", ");
+            }
+            sb.setLength(sb.length() - 2); // Retirer la virgule et l'espace finaux
+        } else {
+            sb.append("Aucun");
+        }
+        sb.append("\n");
+
+        return sb.toString();
+    }
+
+
 }

@@ -34,10 +34,15 @@ public class Secteur {
             System.out.println(hex);
         }
     }
-/*
-    public String toString(){
 
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Secteur Nom: ").append(nom).append("\n");
+        sb.append("Hexagones:\n");
+        for (Hex hex : listeHex) {
+            sb.append("  - ").append(hex.toString()).append("\n");
+        }
+        return sb.toString();
     }
 
- */
 }

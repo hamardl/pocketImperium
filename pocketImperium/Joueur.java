@@ -94,7 +94,7 @@ public abstract class Joueur {
         this.listeJoueur = listeJoueur;
     }
         
-        public abstract void ajouterVaisseau();
+        public abstract void ajouterVaisseau(ArrayList<Hex> listeHex);
         public abstract void déplacer();
         public abstract void attaquerHex();
         public abstract void ordonnerCarte();
@@ -110,7 +110,7 @@ public abstract class Joueur {
     	}
     	
     	//on compare la carte du joueur avec nos trois carte et après on fais les actions demandé
-        public void jouerCarte() {
+        public void jouerCarte(PlateauDeJeu pdj) {
             // Calculer le nombre de joueurs ayant joué la même carte
             Carte carte=derniereCarteRevelee;
             int nbJoueurJoueCarte = compterJoueursAvecCarte(carte, listeJoueur);
@@ -118,7 +118,7 @@ public abstract class Joueur {
             // Selon la carte jouée, effectuer les actions
             if (carte.equals(Carte.Expand)) {
                 for (int i = 0; i < 3 - nbJoueurJoueCarte+1; i++) {
-                    this.ajouterVaisseau(); // Ajouter un vaisseau
+                    this.ajouterVaisseau(pdj.getListeHex()); // Ajouter un vaisseau
                 }
             } else if (carte.equals(Carte.Explore)) {
                 for (int i = 0; i < 3 - nbJoueurJoueCarte+1; i++) {
@@ -142,23 +142,7 @@ public abstract class Joueur {
         return nbJoueurJoueCarte;
     }
 
-    	
 
-
-    // Calcul du score en vérifiant l'occupant
-    public void calculScore(Secteur secteur) {
-        for (Hex hex : secteur.getListeHex()) {
-            if (hex.getOccupant().equals(this.getNom())) { // Vérification couleur
-                int capacite = hex.getCapacite();
-                if (capacite == 2) {
-                    score += 1;
-                } else if (capacite == 3) {
-                    score += 2;
-                }
-            }
-        }
-        System.out.println("Score actuel : " + score);
-    }
 
     //compter le nombre de vaissezau à chaque fin de tour si =0 alors partie finie
     public void compterVaisseaux() {

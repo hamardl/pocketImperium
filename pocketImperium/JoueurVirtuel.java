@@ -11,9 +11,37 @@ public class JoueurVirtuel extends Joueur{
         super(nom,couleur,ordreDeJeu);
 	}
 
-    public void ajouterVaisseau() {
-        System.out.println(this.getNom()+"  a ajouté un vaisseau");
+
+    public void ajouterVaisseau( ArrayList<Hex> listeHex) {
+        // Vérification du nombre de vaisseaux du bot
+        if (this.getListeVaisseaux().size() >= 15) {
+            System.out.println(this.getNom()+" a déjà 15 vaisseaux. Il ne peut pas en ajouter davantage.");
+            return;
+        }
+
+        Random random = new Random();
+        Hex hexChoisi = null;
+
+        // Recherche d'un hexagone occupé par le bot
+        while (true) {
+            int indexAleatoire = random.nextInt(listeHex.size());
+            Hex candidat = listeHex.get(indexAleatoire);
+
+            if (this.getNom().equals(candidat.getOccupant())) {
+                hexChoisi = candidat;
+                break;
+            }
+        }
+
+        // Création et ajout du vaisseau
+        Vaisseau nouveauVaisseau = new Vaisseau(this);
+        hexChoisi.getListVaisseaux().add(nouveauVaisseau);
+        this.getListeVaisseaux().add(nouveauVaisseau);
+
+        System.out.println(this.getNom()+" a ajouté un nouveau vaisseau sur l'hexagone " +
+                hexChoisi.getCoordonnees().get(0) + ", " + hexChoisi.getCoordonnees().get(1) + ".");
     }
+
     public void déplacer() {
         System.out.println(this.getNom()+"  a déplacer une flotte");
     }
@@ -35,8 +63,11 @@ public class JoueurVirtuel extends Joueur{
         }
 
         Random random = new Random();
-        int indexAleatoire = random.nextInt(listeSecteurs.size()); // Choisir un indice aléatoire
-        return listeSecteurs.get(indexAleatoire); // Retourner le secteur choisi
+        int indexAleatoire = random.nextInt(listeSecteurs.size());// Choisir un indice aléatoire
+        Secteur secteur = listeSecteurs.get(indexAleatoire);
+        System.out.println(this.getNom()+" a choisi le secteur "+ secteur.getNom());
+        return secteur; // Retourner le secteur choisi
+
     }
 
 

@@ -18,7 +18,7 @@ public class Tour {
 	public void gestionTour(PlateauDeJeu pdj) {
 		// Etape 1: Chaque joueur utilise ordonnerCarte()
 		for (Joueur joueur : listeJoueur) {
-			System.out.println("c'est à"+joueur.getNom()+"d'ordonner ses cartes");
+			System.out.println("c'est à "+joueur.getNom()+" d'ordonner ses cartes");
 			joueur.ordonnerCarte();  // Appel de la méthode ordonnerCarte() pour chaque joueur
 		}
 
@@ -26,7 +26,7 @@ public class Tour {
 		for (int i = 0; i < 3; i++) {
 			for (Joueur joueur : listeJoueur) {
 				joueur.revelerCarte(joueur.getListeDeCarteOrdonnee());// Chaque joueur révèle sa carte à chaque tour
-				System.out.println(joueur.getNom() + "a choisit la carte" + joueur.getDerniereCarteRevelee());
+				System.out.println(joueur.getNom() + " a choisit la carte " + joueur.getDerniereCarteRevelee());
 			}
 
 			// Etape 3: Déterminer l'ordre de jeu et obtenir la nouvelle liste d'ordre
@@ -34,7 +34,7 @@ public class Tour {
 
 			// Etape 4: Parcourir la liste d'ordre et chaque joueur joue sa carte
 			for (Joueur joueur : ordreDeJeu) {
-				joueur.jouerCarte();  // Chaque joueur joue sa carte selon l'ordre déterminé
+				joueur.jouerCarte(pdj);  // Chaque joueur joue sa carte selon l'ordre déterminé
 			}
 		}
 			//etape 5 : entrenir vaisseaux
@@ -62,26 +62,26 @@ public class Tour {
 						System.out.println("C'est au tour de " + joueur.getNom() + " de choisir deux secteurs.");
 
 						// Premier choix
-						Secteur secteur1;
+						Secteur secteurA;
 						do {
-							secteur1 = joueur.choisirSecteur(pdj.getListeSecteur()); // Appelle la méthode choisirSecteur
-							if (secteursDejaChoisis.contains(secteur1)) {
+							secteurA = joueur.choisirSecteur(pdj.getListeSecteur()); // Appelle la méthode choisirSecteur
+							if (secteursDejaChoisis.contains(secteurA)) {
 								System.out.println("Ce secteur a déjà été choisi. Veuillez en choisir un autre.");
 							}
-						} while (secteursDejaChoisis.contains(secteur1));
-						secteursDejaChoisis.add(secteur1); // Ajoute le secteur choisi à la liste
-						joueur.calculScore(secteur1);
+						} while (secteursDejaChoisis.contains(secteurA));
+						secteursDejaChoisis.add(secteurA); // Ajoute le secteur choisi à la liste
+						this.calculScore(secteurA);
 
 						// Deuxième choix
-						Secteur secteur2;
+						Secteur secteurB;
 						do {
-							secteur2 = joueur.choisirSecteur(pdj.getListeSecteur()); // Appelle la méthode choisirSecteur
-							if (secteursDejaChoisis.contains(secteur2)) {
+							secteurB = joueur.choisirSecteur(pdj.getListeSecteur()); // Appelle la méthode choisirSecteur
+							if (secteursDejaChoisis.contains(secteurB)) {
 								System.out.println("Ce secteur a déjà été choisi. Veuillez en choisir un autre.");
 							}
-						} while (secteursDejaChoisis.contains(secteur2));
-						secteursDejaChoisis.add(secteur2); // Ajoute le secteur choisi à la liste
-						joueur.calculScore(secteur2);
+						} while (secteursDejaChoisis.contains(secteurB));
+						secteursDejaChoisis.add(secteurB); // Ajoute le secteur choisi à la liste
+						this.calculScore(secteurB);
 
 					} else {
 						System.out.println("C'est au tour de " + joueur.getNom() + " de choisir un secteur.");
@@ -94,8 +94,8 @@ public class Tour {
 								System.out.println("Ce secteur a déjà été choisi. Veuillez en choisir un autre.");
 							}
 						} while (secteursDejaChoisis.contains(secteur));
-						secteursDejaChoisis.add(secteur); // Ajoute le secteur choisi à la liste
-						joueur.calculScore(secteur);
+						secteursDejaChoisis.add(secteur);// Ajoute le secteur choisi à la liste
+						this.calculScore(secteur);
 					}
 				}
 				//switch l'ordre de Jeu
@@ -141,6 +141,31 @@ public class Tour {
 
 		return nouvelleListe;
 	}
+
+	// Calcul du score en vérifiant l'occupant
+	public void calculScore(Secteur secteur) {
+		for (Hex hex : secteur.getListeHex()) {
+			// Vérifie si l'hex a un occupant
+			Joueur occupant = hex.getOccupant();
+			if (occupant == null) {
+				continue; // Passe au prochain hex si aucun occupant
+			}
+
+			for (Joueur joueur : listeJoueur) {
+				// Vérifie si le nom de l'occupant correspond au joueur
+				if (occupant.equals(joueur.getNom())) {
+					int capacite = hex.getCapacite();
+					if (capacite == 2) {
+						joueur.score += 1;
+					} else if (capacite == 3) {
+						joueur.score += 2;
+					}
+					System.out.println("Score actuel pour " + joueur.getNom() + ": " + joueur.score);
+				}
+			}
+		}
+	}
+
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
