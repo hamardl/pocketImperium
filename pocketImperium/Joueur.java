@@ -1,7 +1,6 @@
 package pocketImperium;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 public abstract class Joueur {
@@ -95,12 +94,58 @@ public abstract class Joueur {
     }
         
         public abstract void ajouterVaisseau(ArrayList<Hex> listeHex);
-        public abstract void déplacer();
-        public abstract void attaquerHex();
+        public abstract void deplacer(ArrayList<Hex> listeHex,ArrayList<Vaisseau> listeVaisseauDeplaces);
+        public abstract void attaquerHex(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listeVaisseauUtilises);
         public abstract void ordonnerCarte();
         public abstract Secteur choisirSecteur(ArrayList<Secteur> listeSecteurs);
-        
-    	public void revelerCarte(ArrayList<Carte> listeDeCarteOrdonnee) {
+        public abstract Hex choisirHexDepart(ArrayList<Secteur> secteursDejaChoisis, ArrayList<Hex> listeHex);
+
+    public void resoudreConflit(Hex hex) {
+        // Map pour compter les vaisseaux par joueur
+        Map<Joueur, Integer> vaisseauxParJoueur = new HashMap<>();
+
+        // Parcourir la liste des vaisseaux sur cet hex
+        for (Vaisseau vaisseau : hex.getListVaisseaux()) {
+            Joueur joueur = vaisseau.getJoueur(); // Obtenir le joueur propriétaire
+            vaisseauxParJoueur.put(joueur, vaisseauxParJoueur.getOrDefault(joueur, 0) + 1);
+        }
+
+        // Vérifier si au moins 2 joueurs ont des vaisseaux
+        if (vaisseauxParJoueur.size() < 2) {
+            System.out.println("Aucun conflit : un seul joueur possède des vaisseaux sur cet hex.");
+            return;
+        }
+
+        // Trouver le nombre minimum de vaisseaux parmi les joueurs présents
+        int nombreARetirer = vaisseauxParJoueur.values().stream().min(Integer::compareTo).orElse(0);
+
+        if (nombreARetirer > 0) {
+            System.out.println("Chaque joueur perd " + nombreARetirer + " vaisseaux à cause du conflit.");
+
+            // Parcourir les joueurs et retirer les vaisseaux
+            for (Map.Entry<Joueur, Integer> entry : vaisseauxParJoueur.entrySet()) {
+                Joueur joueur = entry.getKey();
+                int vaisseauxRestantsARetirer = nombreARetirer;
+
+                // Parcourir les vaisseaux de l'hex pour ce joueur et les retirer
+                Iterator<Vaisseau> iterator = hex.getListVaisseaux().iterator();
+                while (iterator.hasNext() && vaisseauxRestantsARetirer > 0) {
+                    Vaisseau vaisseau = iterator.next();
+                    if (vaisseau.getJoueur().equals(joueur)) {
+                        iterator.remove(); // Retirer le vaisseau de l'hex
+                        joueur.getListeVaisseaux().remove(vaisseau); // Retirer le vaisseau de la liste du joueur
+                        vaisseau.setHex(null);
+                        vaisseauxRestantsARetirer--;
+                    }
+                }
+            }
+        } else {
+            System.out.println("Pas de conflit à résoudre (aucun vaisseau à retirer).");
+        }
+    }
+
+
+    public void revelerCarte(ArrayList<Carte> listeDeCarteOrdonnee) {
 
     	    this.setDerniereCarteRevelee(listeDeCarteOrdonnee.get(0));
             listeDeCarteOrdonnee.set(0, listeDeCarteOrdonnee.get(1));
@@ -117,17 +162,24 @@ public abstract class Joueur {
 
             // Selon la carte jouée, effectuer les actions
             if (carte.equals(Carte.Expand)) {
+                System.out.println("\n"+this.getNom()+" joue Expand .");
                 for (int i = 0; i < 3 - nbJoueurJoueCarte+1; i++) {
                     this.ajouterVaisseau(pdj.getListeHex()); // Ajouter un vaisseau
                 }
             } else if (carte.equals(Carte.Explore)) {
+                System.out.println("\n"+this.getNom()+" joue Explore .");
+                ArrayList<Vaisseau> vaisseauxDeplaces = new ArrayList<>(); // Liste des vaisseaux déplacés
                 for (int i = 0; i < 3 - nbJoueurJoueCarte+1; i++) {
-                    this.déplacer(); // Déplacer un vaisseau
+                    this.deplacer(pdj.getListeHex(),vaisseauxDeplaces); // Déplacer un vaisseau
                 }
+                vaisseauxDeplaces=null;
             } else if (carte.equals(Carte.Exterminate)) {
+                System.out.println("\n"+this.getNom()+" joue Exterminate .");
+                ArrayList<Vaisseau> vaisseauxUtilises = new ArrayList<>(); // Liste des vaisseaux déplacés
                 for (int i = 0; i < 3 - nbJoueurJoueCarte+1; i++) {
-                    this.attaquerHex(); // Attaquer un Hex
+                    this.attaquerHex(pdj.getListeHex(),vaisseauxUtilises); // Attaquer un Hex
                 }
+                vaisseauxUtilises=null;
             }
         }
 

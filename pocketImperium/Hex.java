@@ -60,11 +60,7 @@ public class Hex {
         this.listVaisseaux.remove(vaisseau);
     }
 
-    public void retirerVaisseauxEnTrop() {
-        while (listVaisseaux.size() > capacite) {
-            listVaisseaux.remove(listVaisseaux.size() - 1); // Supprime le dernier vaisseau
-        }
-    }
+
     //get coordonnes
     public ArrayList<Integer> getCoordonnees(){
         return this.coordonnees;

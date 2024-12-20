@@ -140,7 +140,6 @@ public class PlateauDeJeu {
 		// Marquer le Triprim
 		triprim.setEstTriprim(true);
 		triprim.setCapacite(4);
-		System.out.println("Triprim configuré avec succès.");
 		//initialise les capacité
 
 
@@ -157,10 +156,10 @@ public class PlateauDeJeu {
 
 		// Hex avec capacité de 2
 		ArrayList<ArrayList<Integer>> capacite2Coords = new ArrayList<>();
-		capacite2Coords.add(new ArrayList<>(Arrays.asList(2, 1)));
-		capacite2Coords.add(new ArrayList<>(Arrays.asList(3, 2)));
 		capacite2Coords.add(new ArrayList<>(Arrays.asList(1, 3)));
+		capacite2Coords.add(new ArrayList<>(Arrays.asList(1, 5)));
 		capacite2Coords.add(new ArrayList<>(Arrays.asList(1, 6)));
+		capacite2Coords.add(new ArrayList<>(Arrays.asList(2, 1)));
 		capacite2Coords.add(new ArrayList<>(Arrays.asList(2, 3)));
 		capacite2Coords.add(new ArrayList<>(Arrays.asList(3, 2)));
 		capacite2Coords.add(new ArrayList<>(Arrays.asList(4, 5)));
@@ -244,9 +243,17 @@ public class PlateauDeJeu {
 	public void entretenirVaisseaux() {
 		for (Hex hex : this.listeHex) {
 			if (hex.getListVaisseaux().size() > hex.getCapacite()) {
-				System.out.println("Hex avec dépassement : "
+				System.out.println("l'hex " + hex.getCoordonnees().get(0) + " " + hex.getCoordonnees().get(1) + " avec dépassement : "
 						+ hex.getListVaisseaux().size() + " vaisseaux pour une capacité de " + hex.getCapacite());
-				hex.retirerVaisseauxEnTrop();
+				ArrayList<Vaisseau> listeVaisseauSupprimes =new ArrayList<>();
+				while (hex.getListVaisseaux().size() > hex.getCapacite()) {
+					listeVaisseauSupprimes.add(hex.getListVaisseaux().get(hex.getListVaisseaux().size() - 1));
+					hex.getListVaisseaux().remove(hex.getListVaisseaux().size() - 1); // Supprime le dernier vaisseau
+				}
+				for (Vaisseau vaisseau : listeVaisseauSupprimes){
+					hex.getOccupant().getListeVaisseaux().remove(vaisseau);
+					vaisseau.setHex(null);
+				}
 				System.out.println("Dépassement corrigé. Nombre de vaisseaux actuel : " + hex.getListVaisseaux().size());
 			}
 		}

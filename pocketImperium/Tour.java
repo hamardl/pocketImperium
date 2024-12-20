@@ -17,27 +17,29 @@ public class Tour {
 	// Méthode principale de gestion du jeu
 	public void gestionTour(PlateauDeJeu pdj) {
 		// Etape 1: Chaque joueur utilise ordonnerCarte()
+		System.out.println("\nLes joueurs vont ordonner leurs cartes.");
 		for (Joueur joueur : listeJoueur) {
-			System.out.println("c'est à "+joueur.getNom()+" d'ordonner ses cartes");
+			System.out.println("\n C'est à "+joueur.getNom()+" d'ordonner ses cartes");
 			joueur.ordonnerCarte();  // Appel de la méthode ordonnerCarte() pour chaque joueur
 		}
 
 		// Etape 2: Chaque joueur révèle sa carte
 		for (int i = 0; i < 3; i++) {
+			System.out.println("\n\nLes joueurs révèle leur carte.");
 			for (Joueur joueur : listeJoueur) {
 				joueur.revelerCarte(joueur.getListeDeCarteOrdonnee());// Chaque joueur révèle sa carte à chaque tour
-				System.out.println(joueur.getNom() + " a choisit la carte " + joueur.getDerniereCarteRevelee());
+				System.out.println("\n"+joueur.getNom() + " a choisit la carte " + joueur.getDerniereCarteRevelee());
 			}
-
 			// Etape 3: Déterminer l'ordre de jeu et obtenir la nouvelle liste d'ordre
 			ArrayList<Joueur> ordreDeJeu = trierJoueursParCarteEtOrdre(listeJoueur);
-
 			// Etape 4: Parcourir la liste d'ordre et chaque joueur joue sa carte
 			for (Joueur joueur : ordreDeJeu) {
+				System.out.println("\nC'est à "+joueur.getNom()+" de jouer.");
 				joueur.jouerCarte(pdj);  // Chaque joueur joue sa carte selon l'ordre déterminé
 			}
 		}
 			//etape 5 : entrenir vaisseaux
+			System.out.println("\n\n Entretiens des Vaisseaux");
 			pdj.entretenirVaisseaux();
 
 			if(this.numero!=9) {
@@ -59,7 +61,7 @@ public class Tour {
 				// Parcourir la liste triée et appeler choisirSecteur pour chaque joueur
 				for (Joueur joueur : joueursTries) {
 					if (joueur == joueurOccupantTriprim) {
-						System.out.println("C'est au tour de " + joueur.getNom() + " de choisir deux secteurs.");
+						System.out.println("\n\nC'est au tour de " + joueur.getNom() + " de choisir deux secteurs.");
 
 						// Premier choix
 						Secteur secteurA;
@@ -84,7 +86,7 @@ public class Tour {
 						this.calculScore(secteurB);
 
 					} else {
-						System.out.println("C'est au tour de " + joueur.getNom() + " de choisir un secteur.");
+						System.out.println("\n\nC'est au tour de " + joueur.getNom() + " de choisir un secteur.");
 
 						// Unique choix pour les autres joueurs
 						Secteur secteur;
@@ -153,16 +155,18 @@ public class Tour {
 
 			for (Joueur joueur : listeJoueur) {
 				// Vérifie si le nom de l'occupant correspond au joueur
-				if (occupant.equals(joueur.getNom())) {
+				if (occupant.equals(joueur)) {
 					int capacite = hex.getCapacite();
 					if (capacite == 2) {
 						joueur.score += 1;
 					} else if (capacite == 3) {
 						joueur.score += 2;
 					}
-					System.out.println("Score actuel pour " + joueur.getNom() + ": " + joueur.score);
 				}
 			}
+		}
+		for (Joueur joueur : listeJoueur) {
+		System.out.println("Score actuel pour " + joueur.getNom() + ": " + joueur.score);
 		}
 	}
 

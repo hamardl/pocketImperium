@@ -1,9 +1,6 @@
 package pocketImperium;
 
-import java.util.ArrayList;
-
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class JoueurPhysique extends Joueur{
 	
@@ -76,13 +73,13 @@ public class JoueurPhysique extends Joueur{
         do {
             nomChoisi = scanner.nextLine();
             for (Secteur secteur : listeSecteurs) {
-                if (secteur.getNom().equalsIgnoreCase(nomChoisi)) {
+                if (secteur.getNom().equalsIgnoreCase(nomChoisi)&&!"secteur5".equalsIgnoreCase(nomChoisi)) {
                     secteurChoisi = secteur;
                     break;
                 }
             }
             if (secteurChoisi == null) {
-                System.out.println("Nom invalide.Les options disponibles sont : Secteur1, Secteur2, etc jusqu'à 9. Essayez à nouveau.");
+                System.out.println("Nom invalide.Les options disponibles sont : Secteur1, Secteur2, etc jusqu'à 9 sauf le secteur de TriPrim. Essayez à nouveau.");
             }
         } while (secteurChoisi == null);
 
@@ -93,21 +90,47 @@ public class JoueurPhysique extends Joueur{
     public void ajouterVaisseau(ArrayList<Hex> listeHex) {
         Scanner scanner = new Scanner(System.in);
 
+        System.out.println("Souhaitez-vous ajouter un Vaisseau ? (oui/non)");
+        String reponse = scanner.nextLine().trim().toLowerCase();
+        if (!reponse.equals("oui")) {
+            System.out.println("Aucun Vaisseau ajouté.");
+            return;
+        }
+
         // Vérification du nombre de vaisseaux du joueur
         if (this.getListeVaisseaux().size() >= 15) {
             System.out.println("Vous avez déjà 15 vaisseaux. Vous ne pouvez pas en ajouter davantage.");
             return;
         }
 
-        Hex hexChoisi = null;
+        // Filtrer les hex valides
+        ArrayList<Hex> hexDisponibles = new ArrayList<>();
+        for (Hex hex : listeHex) {
+            if (hex.getOccupant() != null && hex.getOccupant().equals(this) && hex.getCapacite() > 1) {
+                hexDisponibles.add(hex);
+            }
+        }
 
-        while (true) {
-            System.out.println("Entrez les coordonnées de l'hexagone où vous souhaitez ajouter un vaisseau (format: x y):");
+        // Si aucun hex valide n'est disponible
+        if (hexDisponibles.isEmpty()) {
+            System.out.println("Aucun hex valide pour ajouter un vaisseau. Vous ne pouvez pas en ajouter.");
+            return;
+        }
+
+        // Affichage des hex disponibles
+        System.out.println("Hex disponibles pour ajouter un vaisseau :");
+        for (Hex hex : hexDisponibles) {
+            System.out.println(" - Hex (" + hex.getCoordonnees().get(0) + ", " + hex.getCoordonnees().get(1) + ")");
+        }
+
+        Hex hexChoisi = null;
+        while (hexChoisi == null) {
+            try {
+            System.out.println("Entrez les coordonnées de l'hexagone où vous souhaitez ajouter un vaisseau (format: x y) :");
             int x = scanner.nextInt();
             int y = scanner.nextInt();
 
-            // Recherche de l'hex correspondant aux coordonnées
-            for (Hex hex : listeHex) {
+            for (Hex hex : hexDisponibles) {
                 if (hex.getCoordonnees().get(0) == x && hex.getCoordonnees().get(1) == y) {
                     hexChoisi = hex;
                     break;
@@ -115,49 +138,261 @@ public class JoueurPhysique extends Joueur{
             }
 
             if (hexChoisi == null) {
-                System.out.println("Aucun hexagone ne correspond à ces coordonnées. Veuillez réessayer.");
-            } else if (!this.getNom().equals(hexChoisi.getOccupant())) {
-                System.out.println("Cet hexagone n'est pas occupé par vous. Vous ne pouvez pas y ajouter de vaisseau. Veuillez réessayer.");
-            } else {
-                break; // Coordonnées valides et hex occupé par le joueur
+                System.out.println("Les coordonnées ne correspondent à aucun hex valide. Veuillez réessayer.");
+            }
+            }
+            catch (InputMismatchException e) {
+                System.out.println("Entrée invalide. Veuillez entrer des coordonnées sous la forme de deux nombres (ex: 3 5).");
+                scanner.nextLine();
             }
         }
 
         // Création et ajout du vaisseau
-        Vaisseau nouveauVaisseau = new Vaisseau(this);
+        Vaisseau nouveauVaisseau = new Vaisseau(this, this.getListeVaisseaux().size());
         hexChoisi.getListVaisseaux().add(nouveauVaisseau);
         this.getListeVaisseaux().add(nouveauVaisseau);
+        nouveauVaisseau.setHex(hexChoisi);
 
-        System.out.println("Un nouveau vaisseau a été ajouté sur l'hexagone " +
+        System.out.println("Un nouveau vaisseau a été ajouté sur l'hexagone (" +
                 hexChoisi.getCoordonnees().get(0) + ", " +
-                hexChoisi.getCoordonnees().get(1) + ".");
+                hexChoisi.getCoordonnees().get(1) + ").");
     }
 
-	public void déplacer() {
+    public void deplacer(ArrayList<Hex> listeHex,ArrayList<Vaisseau> listVaisseauDeplaces) {
         System.out.println(this.getNom()+"  a déplacer une flotte");
-	}	
-	
-	public void attaquerHex() {
-        System.out.println(this.getNom()+"  a attaqué un hex");
-	}
-	
-	public static void main(String[] args) {
+    }
+
+    public void attaquerHex(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listeVaisseauUtilises) {
+        Scanner scanner = new Scanner(System.in);
+        List<Hex> hexAttaquables = new ArrayList<>();
+
+        // Parcourir les hex des vaisseaux du joueur et trouver les hex voisins
+        for (Vaisseau vaisseau : this.getListeVaisseaux()) {
+            Hex hex = vaisseau.getHex();
+            for (Hex voisin : hex.getListeHexesVoisins()) {
+                if (!hexAttaquables.contains(voisin)) {
+                    hexAttaquables.add(voisin);
+                }
+            }
+        }
+        for (Vaisseau vaisseau : listeVaisseauUtilises){
+            System.out.println(vaisseau);
+        }
+
+        hexAttaquables.removeIf(hex -> {
+            // Vérifie si l'hex est contrôlé par le joueur ou a une capacité invalide
+            boolean estControleParJoueur = this.equals(hex.getOccupant());
+            boolean capaciteInvalide = hex.getCapacite() < 2;
+
+            // Vérifie si tous les vaisseaux des hex voisins appartenant au joueur sont déjà utilisés
+            boolean tousVaisseauxUtilises = hex.getListeHexesVoisins().stream()
+                    .filter(voisin -> this.equals(voisin.getOccupant())) // Hex voisin occupé par le joueur
+                    .allMatch(voisin -> !voisin.getListVaisseaux().isEmpty() &&
+                            voisin.getListVaisseaux().stream().allMatch(listeVaisseauUtilises::contains)); // Tous les vaisseaux utilisés
+            // Debugging pour comprendre pourquoi un hex est retiré
+            System.out.println("Hex : (" + hex.getCoordonnees().get(0) + ", " + hex.getCoordonnees().get(1) + ")");
+            System.out.println("  Contrôlé par joueur : " + estControleParJoueur);
+            System.out.println("  Capacité invalide : " + capaciteInvalide);
+            System.out.println("  Tous les vaisseaux voisins déjà utilisés : " + tousVaisseauxUtilises);
+
+
+            // Retirer l'hex s'il satisfait une des conditions d'exclusion
+            return estControleParJoueur || capaciteInvalide || tousVaisseauxUtilises;
+        });
+
+
+        if (hexAttaquables.isEmpty()) {
+            System.out.println("Aucun hexagone disponible pour une attaque.");
+            return;
+        }
+
+        // Afficher les hex attaquables avec le nombre de vaisseaux disponibles
+        System.out.println("Hexagones possibles pour une attaque :");
+        Map<Hex, Integer> hexAvecVaisseaux = new HashMap<>();
+        for (Hex hex : hexAttaquables) {
+            int vaisseauxDisponibles = 0;
+
+            // Compter les vaisseaux disponibles des hex voisins
+            for (Hex voisin : hex.getListeHexesVoisins()) {
+                if (this.equals(voisin.getOccupant())) {
+                    int vaisseauxNonUtilises =
+                            (int) voisin.getListVaisseaux().stream()
+                                    .filter(v -> !listeVaisseauUtilises.contains(v))
+                                    .count();
+                    vaisseauxDisponibles += vaisseauxNonUtilises;
+                }
+            }
+
+            if (vaisseauxDisponibles > 0) {
+                hexAvecVaisseaux.put(hex, vaisseauxDisponibles);
+                System.out.println("Hex : (" + hex.getCoordonnees().get(0) + ", " + hex.getCoordonnees().get(1)
+                        + ") - Vaisseaux disponibles : " + vaisseauxDisponibles);
+            }
+        }
+
+        if (hexAvecVaisseaux.isEmpty()) {
+            System.out.println("Aucun vaisseau disponible pour attaquer les hexagones potentiels.");
+            return;
+        }
+
+        // Demander à l'utilisateur de choisir l'hex à attaquer
+        Hex hexCible = null;
+        while (hexCible == null) {
+            try {
+                System.out.println("Veuillez choisir un hexagone à attaquer (format: x y) :");
+                int x = scanner.nextInt();
+                int y = scanner.nextInt();
+                scanner.nextLine(); // Consommer la ligne restante
+
+                for (Hex hex : hexAvecVaisseaux.keySet()) {
+                    if (hex.getCoordonnees().get(0) == x && hex.getCoordonnees().get(1) == y) {
+                        hexCible = hex;
+                        break;
+                    }
+                }
+
+                if (hexCible == null) {
+                    System.out.println("Hex invalide. Veuillez choisir parmi les hexagones affichés.");
+                }
+            }
+            catch (InputMismatchException e) {
+                    System.out.println("Entrée invalide. Veuillez entrer des coordonnées sous la forme de deux nombres (ex: 3 5).");
+                    scanner.nextLine();
+            }
+        }
+
+        // Demander pour chaque voisin le nombre de vaisseaux à utiliser
+        System.out.println("Vous avez choisi d'attaquer l'hex (" + hexCible.getCoordonnees().get(0) + ", "
+                + hexCible.getCoordonnees().get(1) + ").");
+        ArrayList<Vaisseau> listeVaisseauUtilisesCeTour = null;
+
+        for (Hex voisin : hexCible.getListeHexesVoisins()) {
+            if (this.equals(voisin.getOccupant())) {
+                int vaisseauxDisponibles = (int) voisin.getListVaisseaux().stream()
+                        .filter(v -> !listeVaisseauUtilises.contains(v))
+                        .count();
+
+                if (vaisseauxDisponibles > 0) {
+                    System.out.println("Depuis l'hex voisin (" + voisin.getCoordonnees().get(0) + ", "
+                            + voisin.getCoordonnees().get(1) + "), vous avez " + vaisseauxDisponibles + " vaisseaux disponibles.");
+
+                    int vaisseauxAUtiliser = -1;
+
+                    // Validation robuste de l'entrée utilisateur
+                    while (true) {
+                        System.out.println("Combien de vaisseaux voulez-vous utiliser depuis cet hex ? (max : " + vaisseauxDisponibles + ")");
+                        String saisieUtilisateur = scanner.nextLine().trim();
+
+                        try {
+                            vaisseauxAUtiliser = Integer.parseInt(saisieUtilisateur);
+
+                            if (vaisseauxAUtiliser >= 0 && vaisseauxAUtiliser <= vaisseauxDisponibles) {
+                                break; // Sortir de la boucle si l'entrée est valide
+                            } else {
+                                System.out.println("Nombre invalide. Veuillez entrer un nombre entre 0 et " + vaisseauxDisponibles + ".");
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("Entrée invalide. Veuillez entrer un nombre entier.");
+                        }
+                    }
+
+
+                    // Ajouter les vaisseaux utilisés à la liste
+                    listeVaisseauUtilisesCeTour = new ArrayList<>();
+                    int vaisseauxAjoutes = 0;
+                    for (Vaisseau v : voisin.getListVaisseaux()) {
+                        if (!listeVaisseauUtilises.contains(v) && vaisseauxAjoutes < vaisseauxAUtiliser) {
+                            listeVaisseauUtilisesCeTour.add(v);
+                            listeVaisseauUtilises.add(v);
+                            vaisseauxAjoutes++;
+                        }
+                    }
+                    if (listeVaisseauUtilisesCeTour.isEmpty()) {
+                        System.out.println("Aucun vaisseau n'a été utilisé pour attaquer.");
+                       return;
+                    }
+                }
+            }
+        }
+
+        for (Vaisseau v : listeVaisseauUtilisesCeTour){
+            v.setHex(hexCible);
+            hexCible.getListVaisseaux().add(v);
+        }
+        this.resoudreConflit(hexCible);
+    }
+
+
+    public Hex choisirHexDepart(ArrayList<Secteur> secteursDejaChoisis, ArrayList<Hex> listeHex) {
+        Scanner scanner = new Scanner(System.in);
+        Hex hexChoisi = null;
+        boolean hexValide = false;
+
+        while (!hexValide) {
+            try {
+                System.out.println("C'est à " + this.getNom() + " d'entrer les coordonnées de l'hexagone de départ (format: x y) :");
+                int x = scanner.nextInt();
+                int y = scanner.nextInt();
+
+                // Recherche de l'hex avec les coordonnées données
+                for (Hex hex : listeHex) {
+                    if (hex.getCoordonnees().get(0) == x && hex.getCoordonnees().get(1) == y) {
+                        hexChoisi = hex;
+                        break;
+                    }
+                }
+
+                // Vérification : l'hex existe
+                if (hexChoisi == null) {
+                    System.out.println("Aucun hexagone ne correspond à ces coordonnées. Veuillez réessayer.");
+                    continue;
+                }
+
+                // Vérification : l'hex n'appartient pas à un secteur déjà choisi
+                boolean hexDansSecteur = false;
+                for (Secteur secteur : secteursDejaChoisis) {
+                    if (secteur.contientHex(hexChoisi)) {
+                        hexDansSecteur = true;
+                        System.out.println("L'hexagone appartient déjà au secteur : " + secteur.getNom());
+                    }
+                }
+
+                if (hexDansSecteur) {
+                    System.out.println("Voici les secteurs déjà choisis :");
+                    for (Secteur secteur : secteursDejaChoisis) {
+                        System.out.println("- " + secteur.getNom());
+                    }
+                    continue;
+                }
+
+                // Vérification : l'hex a une capacité de 2
+                if (hexChoisi.getCapacite() != 2) {
+                    System.out.println("L'hexagone choisi doit avoir un systeme I. Veuillez réessayer.");
+                    continue;
+                }
+
+                // Si toutes les conditions sont remplies
+                hexValide = true;
+            }catch (InputMismatchException e) {
+                    System.out.println("Entrée invalide. Veuillez entrer des coordonnées sous la forme de deux nombres (ex: 3 5).");
+                    scanner.nextLine();
+            }
+        }
+
+        System.out.println("\n"+this.getNom()+" a choisi l'hexagone " +
+                hexChoisi.getCoordonnees().get(0) + ", " +
+                hexChoisi.getCoordonnees().get(1) + ".");
+        return hexChoisi;
+    }
+
+
+
+    public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		JoueurPhysique joueur1 =new JoueurPhysique("Loélie","rouge",1);
-        JoueurVirtuel joueur2 =new JoueurVirtuel("Gab","bleu",2);
-        JoueurVirtuel joueur3 =new JoueurVirtuel("Swann","vert",3);
 
-        ArrayList<Joueur> liste0= new ArrayList<>();
-        liste0.add(joueur1);
-        liste0.add(joueur2);
-        liste0.add(joueur3);
-        joueur1.setListeJoueur(liste0);
-        joueur2.setListeJoueur(liste0);
-        joueur3.setListeJoueur(liste0);
-		Tour tour1= new Tour(liste0,1);
-        PlateauDeJeu pdj = new PlateauDeJeu();
 
-        tour1.gestionTour(pdj);
+        Partie partie= new Partie();
+        partie.commencerPartie();
 
 	}
 
