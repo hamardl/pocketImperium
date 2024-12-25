@@ -1,24 +1,36 @@
 package pocketImperium;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
-public class Tour {
+public class Tour implements Serializable {
 	private ArrayList<Joueur> listeJoueur;
 	private int numero;
+	private Partie partie;
 
-	public Tour(ArrayList<Joueur> listeJoueur,int numero){
+	public Tour(ArrayList<Joueur> listeJoueur,int numero,Partie partie){
 		this.listeJoueur=listeJoueur;
 		this.numero=numero;
+		this.partie=partie;
 	}
+	public void setNumero(int num){
+		this.numero=num;
+	}
+	public Partie getPartie(){
+		return this.partie;
+	}
+
 
 	// Méthode principale de gestion du jeu
 	public void gestionTour(PlateauDeJeu pdj) {
 		// Etape 1: Chaque joueur utilise ordonnerCarte()
+		ArrayList<Joueur> joueursTries2 = new ArrayList<>(listeJoueur);
+		joueursTries2.sort(Comparator.comparingInt(Joueur::getOrdreDeJeu));// Tri croissant
 		System.out.println("\nLes joueurs vont ordonner leurs cartes.");
-		for (Joueur joueur : listeJoueur) {
+		for (Joueur joueur : joueursTries2) {
 			System.out.println("\n C'est à "+joueur.getNom()+" d'ordonner ses cartes");
 			joueur.ordonnerCarte();  // Appel de la méthode ordonnerCarte() pour chaque joueur
 		}
@@ -26,7 +38,7 @@ public class Tour {
 		// Etape 2: Chaque joueur révèle sa carte
 		for (int i = 0; i < 3; i++) {
 			System.out.println("\n\nLes joueurs révèle leur carte.");
-			for (Joueur joueur : listeJoueur) {
+			for (Joueur joueur : joueursTries2) {
 				joueur.revelerCarte(joueur.getListeDeCarteOrdonnee());// Chaque joueur révèle sa carte à chaque tour
 				System.out.println("\n"+joueur.getNom() + " a choisit la carte " + joueur.getDerniereCarteRevelee());
 			}
@@ -42,7 +54,16 @@ public class Tour {
 			System.out.println("\n\n Entretiens des Vaisseaux");
 			pdj.entretenirVaisseaux();
 
-			if(this.numero!=9) {
+			//etape 5.2 vérifier que les joueurs ont bien des vaisseaux sinon tour=9 et fin de partie
+		for (Joueur joueur :listeJoueur){
+			if(joueur.getListeVaisseaux().isEmpty()){
+				this.setNumero(9);
+				System.out.println(joueur.getNom()+" n'a plus de vaisseaux.\nFin de la partie.\n Calcul final des scores");
+			}
+		}
+
+
+			if(this.numero<9) {
 				//etape 6 :choisir secetur et update score
 				// Créer une nouvelle liste triée en fonction de l'attribut ordreDeJeu
 				ArrayList<Joueur> joueursTries = new ArrayList<>(listeJoueur);
@@ -100,15 +121,28 @@ public class Tour {
 						this.calculScore(secteur);
 					}
 				}
-				//switch l'ordre de Jeu
-				int odj = 0;
 				for (Joueur joueur : joueursTries) {
-					odj += 1;
-					joueur.setOrdreDeJeu(odj); // Appelle la méthode choisirSecteur
+					joueur.setOrdreDeJeu(joueur.getOrdreDeJeu()-1);
+					if(joueur.getOrdreDeJeu()==0){
+						joueur.setOrdreDeJeu(3);
+					}
 				}
 			}
 			else{
-
+				System.out.println("\nCalcul des scores final");
+				for (Secteur secteur : pdj.getListeSecteur()){
+					calculScore(secteur);
+					calculScore(secteur);
+				}
+				Joueur gagnant= listeJoueur.getFirst();;
+				for (Joueur joueur :listeJoueur){
+					if (joueur.getScore()> gagnant.getScore()){
+						gagnant=joueur;
+					}
+					System.out.println("\n le score de "+ joueur.getNom()+ " est : "+joueur.getScore());
+				}
+				System.out.println("\n\nLe gagnant est : "+gagnant.getNom());
+				this.getPartie().supprimerSauvegarde("C:\\dossier\\LO02\\PocketImperieum\\src\\Partie.obj");
 			}
 
 	}
@@ -168,6 +202,10 @@ public class Tour {
 		for (Joueur joueur : listeJoueur) {
 		System.out.println("Score actuel pour " + joueur.getNom() + ": " + joueur.score);
 		}
+	}
+
+	public int getNumero(){
+		return numero;
 	}
 
 	public static void main(String[] args) {

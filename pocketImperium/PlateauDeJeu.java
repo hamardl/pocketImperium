@@ -1,13 +1,14 @@
 package pocketImperium;
 import javax.swing.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
 import static javax.swing.UIManager.get;
 
-public class PlateauDeJeu {
+public class PlateauDeJeu implements Serializable {
 
 	private ArrayList<Hex> listeHex;         // Liste des Hex sur le plateau
 	private ArrayList<Secteur> listeSecteur; // Liste des Vaisseaux sur le plateau

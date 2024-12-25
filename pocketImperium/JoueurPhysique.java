@@ -1,8 +1,9 @@
 package pocketImperium;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class JoueurPhysique extends Joueur{
+public class JoueurPhysique extends Joueur implements Serializable {
 	
 	public JoueurPhysique (String nom, String couleur, int ordreDeJeu) {
 		super(nom,couleur,ordreDeJeu);
@@ -158,155 +159,206 @@ public class JoueurPhysique extends Joueur{
                 hexChoisi.getCoordonnees().get(1) + ").");
     }
 
-    public void deplacer(ArrayList<Hex> listeHex,ArrayList<Vaisseau> listVaisseauDeplaces) {
-        System.out.println(this.getNom()+"  a déplacer une flotte");
+//    public void deplacer(ArrayList<Hex> listeHex,ArrayList<Vaisseau> listVaisseauDeplaces) {
+//        System.out.println(this.getNom()+"  a déplacer une flotte");
+//    }
+
+    public void deplacer(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listVaisseauDeplaces) {
+
+        Scanner scanner = new Scanner(System.in);
+        ArrayList<Vaisseau> listeVaisseauxDeplacesCeTour = new ArrayList<>(); // Nouvelle liste temporaire
+        int nbDeplacement = 1;
+
+        System.out.println("Souhaitez-vous déplacer une flotte ? (oui/non)");
+        String reponse = scanner.nextLine().trim().toLowerCase();
+        if (!reponse.equals("oui")) {
+            System.out.println("Aucune flotte déplacée.");
+            return;
+        }
+
+        // Création de la liste des hex de départ
+        ArrayList<Hex> listeHexDepart = new ArrayList<>();
+        for (Hex hex : listeHex) {
+            if (hex.getListVaisseaux().stream().anyMatch(v -> this.equals(v.getJoueur()))) {
+                listeHexDepart.add(hex);
+            }
+        }
+
+        // Filtrer les hex de départ
+        listeHexDepart.removeIf(hex -> {
+            // Vérifie si tous les voisins sont occupés par des ennemis
+            boolean tousVoisinsOccupesParEnnemis = hex.getListeHexesVoisins().stream()
+                    .allMatch(voisin -> voisin.getOccupant() != null && !this.equals(voisin.getOccupant()));
+
+            // Vérifie si tous les vaisseaux de cet hex ont déjà été déplacés
+            boolean tousVaisseauxDejaDeplaces = !listVaisseauDeplaces.isEmpty() && hex.getListVaisseaux().stream()
+                    .allMatch(listVaisseauDeplaces::contains);
+
+            // Si une des deux conditions est vraie, l'hex est retiré
+            return tousVoisinsOccupesParEnnemis || tousVaisseauxDejaDeplaces;
+        });
+
+
+
+        if (listeHexDepart.isEmpty()) {
+            System.out.println("Aucun hex disponible pour commencer un déplacement.");
+            return;
+        }
+
+        Hex hexCourant = null;
+
+        // Sélection de l'hex de départ
+        System.out.println("Options d'hex de départ :");
+        for (int i = 0; i < listeHexDepart.size(); i++) {
+            Hex hex = listeHexDepart.get(i);
+            long nbVaisseauxDeplacables = hex.getListVaisseaux().stream()
+                    .filter(v -> !listVaisseauDeplaces.contains(v))
+                    .count();
+            System.out.println(i + 1 + ". Hex (" + hex.getCoordonnees().get(0) + ", " + hex.getCoordonnees().get(1)
+                    + ") - " + nbVaisseauxDeplacables + " vaisseaux disponibles");
+        }
+
+        while (hexCourant == null) {
+            try {
+                System.out.println("Choisissez un hex de départ (numéro) :");
+                int choix = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                if (choix >= 0 && choix < listeHexDepart.size()) {
+                    hexCourant = listeHexDepart.get(choix);
+                } else {
+                    System.out.println("Choix invalide. Réessayez.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Entrée invalide. Veuillez entrer un nombre.");
+            }
+        }
+        int nbVaisseaux=0;
+        while (nbDeplacement <= 2) {
+            switch (nbDeplacement) {
+                case 1 -> {
+                    Hex hexDestination = choisirDestination(hexCourant, scanner, listVaisseauDeplaces, listeVaisseauxDeplacesCeTour);
+                    if (hexDestination == null) {
+                        return; // Aucun déplacement possible
+                    }
+                    nbVaisseaux=deplacerVaisseaux(hexCourant, hexDestination, listeVaisseauxDeplacesCeTour,listVaisseauDeplaces, scanner,0);
+                    if (nbVaisseaux==0){
+                        return;
+                    }
+                    if (hexDestination.isEstTriprim()) {
+                        System.out.println("L'hex destination est TriPrim. Vous ne pouvez pas continuer le déplacement.");
+                        return;
+                    }
+
+                    System.out.println("Voulez-vous continuer à déplacer jusqu'à un deuxième hex ? (oui/non)");
+                    String reponse2 = scanner.nextLine().trim().toLowerCase();
+                    if (!reponse2.equals("oui")) {
+
+                        // Ajouter les vaisseaux déplacés ce tour à la liste principale
+                        listVaisseauDeplaces.addAll(listeVaisseauxDeplacesCeTour);
+                        return;
+                    }
+
+                    hexCourant = hexDestination; // Mise à jour pour le prochain tour
+                    nbDeplacement++;
+                }
+                case 2 -> {
+                    Hex hexDestination = choisirDestination(hexCourant, scanner, listVaisseauDeplaces, listeVaisseauxDeplacesCeTour);
+                    if (hexDestination == null) {
+                        return; // Aucun déplacement possible
+                    }
+
+                    int nbVaisseaux2=deplacerVaisseaux(hexCourant, hexDestination, listeVaisseauxDeplacesCeTour, listVaisseauDeplaces,scanner,nbVaisseaux);
+                    System.out.println("Deuxième déplacement effectué. Fin de l'action.");
+                    // Ajouter les vaisseaux déplacés ce tour à la liste principale
+                    listVaisseauDeplaces.addAll(listeVaisseauxDeplacesCeTour);
+                    return;
+                }
+            }
+        }
+
+    }
+    private Hex choisirDestination(Hex hexCourant, Scanner scanner, ArrayList<Vaisseau> listVaisseauDeplaces, ArrayList<Vaisseau> listeVaisseauxDeplacesCeTour) {
+        ArrayList<Hex> listeHexDestination = new ArrayList<>(hexCourant.getListeHexesVoisins());
+        listeHexDestination.removeIf(hex -> !this.equals(hex.getOccupant()) && hex.getOccupant() != null);
+
+        if (listeHexDestination.isEmpty()) {
+            System.out.println("Aucun hex de destination disponible depuis cet hex.");
+            return null;
+        }
+
+        System.out.println("Options d'hex de destination :");
+        for (int i = 0; i < listeHexDestination.size(); i++) {
+            Hex hex = listeHexDestination.get(i);
+            System.out.println(i + 1 + ". Hex (" + hex.getCoordonnees().get(0) + ", " + hex.getCoordonnees().get(1) + ")");
+        }
+
+        Hex hexDestination = null;
+        while (hexDestination == null) {
+            try {
+                System.out.println("Choisissez un hex de destination (numéro) :");
+                int choix = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                if (choix >= 0 && choix < listeHexDestination.size()) {
+                    hexDestination = listeHexDestination.get(choix);
+                } else {
+                    System.out.println("Choix invalide. Réessayez.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Entrée invalide. Veuillez entrer un nombre.");
+            }
+        }
+
+        return hexDestination;
+    }
+    private int deplacerVaisseaux(Hex hexCourant, Hex hexDestination, ArrayList<Vaisseau> listeVaisseauxDeplacesCeTour, ArrayList<Vaisseau> listeVaisseauxDeplaces, Scanner scanner,int nbVaisseauDeplacesAvant) {
+        long nbVaisseauxDeplacables = hexCourant.getListVaisseaux().stream()
+                .filter(v -> !listeVaisseauxDeplaces.contains(v))
+                .count();
+
+        int nbVaisseaux = -1;
+        while (nbVaisseaux < 0 || nbVaisseaux > nbVaisseauxDeplacables) {
+            try {
+                System.out.println("Combien de vaisseaux voulez-vous déplacer ? (max : " + nbVaisseauxDeplacables + ")");
+                nbVaisseaux = Integer.parseInt(scanner.nextLine().trim());
+                if (nbVaisseaux < 0 || nbVaisseaux > nbVaisseauxDeplacables) {
+                    System.out.println("Nombre invalide. Veuillez entrer un nombre entre 0 et " + nbVaisseauxDeplacables + ".");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Entrée invalide. Veuillez entrer un nombre.");
+            }
+        }
+
+        int vaisseauxAjoutes = 0;
+        Iterator<Vaisseau> iterator = hexCourant.getListVaisseaux().iterator();
+        while (iterator.hasNext()) {
+            Vaisseau v = iterator.next();
+            if (!listeVaisseauxDeplaces.contains(v) && vaisseauxAjoutes < nbVaisseaux) {
+                if(nbVaisseaux>nbVaisseauDeplacesAvant) {
+                    listeVaisseauxDeplacesCeTour.add(v);
+                }
+                hexDestination.getListVaisseaux().add(v);
+                iterator.remove(); // Supprime de hexCourant de manière sûre
+                v.setHex(hexDestination);
+                vaisseauxAjoutes++;
+            }
+        }
+
+        System.out.println(nbVaisseaux + " vaisseaux déplacés vers l'hex (" + hexDestination.getCoordonnees().get(0)
+                + ", " + hexDestination.getCoordonnees().get(1) + ").");
+        return nbVaisseaux;
     }
 
-//    public void deplacer(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listVaisseauDeplaces) {
-//        Scanner scanner = new Scanner(System.in);
-//        boolean continuerDeplacer = true;
-//
-//        // Création de la liste des hex de départ
-//        ArrayList<Hex> listeHexDepart = new ArrayList<>();
-//        for (Hex hex : listeHex) {
-//            if (hex.getListVaisseaux().stream().anyMatch(v -> this.equals(v.getJoueur()))) {
-//                listeHexDepart.add(hex);
-//            }
-//        }
-//
-//        // Filtrer les hex de départ
-//        listeHexDepart.removeIf(hex -> {
-//            boolean tousVoisinsOccupesParEnnemis = hex.getListeHexesVoisins().stream()
-//                    .allMatch(voisin -> !this.equals(voisin.getOccupant()));
-//            boolean tousVaisseauxDejaDeplaces = hex.getListVaisseaux().stream()
-//                    .allMatch(listVaisseauDeplaces::contains);
-//            return tousVoisinsOccupesParEnnemis || tousVaisseauxDejaDeplaces;
-//        });
-//
-//        if (listeHexDepart.isEmpty()) {
-//            System.out.println("Aucun hex disponible pour commencer un déplacement.");
-//            return;
-//        }
-//
-//        Hex hexCourant = null;
-//
-//        // Sélection initiale de l'hex de départ
-//        while (continuerDeplacer) {
-//            // Afficher les options d'hex de départ
-//            System.out.println("Options d'hex de départ :");
-//            for (int i = 0; i < listeHexDepart.size(); i++) {
-//                Hex hex = listeHexDepart.get(i);
-//                long nbVaisseauxDeplacables = hex.getListVaisseaux().stream()
-//                        .filter(v -> !listVaisseauDeplaces.contains(v))
-//                        .count();
-//                System.out.println(i + 1 + ". Hex (" + hex.getCoordonnees().get(0) + ", " + hex.getCoordonnees().get(1)
-//                        + ") - " + nbVaisseauxDeplacables + " vaisseaux disponibles");
-//            }
-//
-//            // Choix de l'hex de départ
-//            hexCourant = null;
-//            while (hexCourant == null) {
-//                try {
-//                    System.out.println("Choisissez un hex de départ (numéro) :");
-//                    int choix = Integer.parseInt(scanner.nextLine().trim()) - 1;
-//                    if (choix >= 0 && choix < listeHexDepart.size()) {
-//                        hexCourant = listeHexDepart.get(choix);
-//                    } else {
-//                        System.out.println("Choix invalide. Réessayez.");
-//                    }
-//                } catch (NumberFormatException e) {
-//                    System.out.println("Entrée invalide. Veuillez entrer un nombre.");
-//                }
-//            }
-//
-//            // Boucle pour choisir destination et déplacer
-//            while (true) {
-//                // Création de la liste des hex de destination
-//                ArrayList<Hex> listeHexDestination = new ArrayList<>(hexCourant.getListeHexesVoisins());
-//                listeHexDestination.removeIf(hex -> !this.equals(hex.getOccupant()) && hex.getOccupant() != null);
-//
-//                if (listeHexDestination.isEmpty()) {
-//                    System.out.println("Aucun hex de destination disponible depuis cet hex.");
-//                    break;
-//                }
-//
-//                // Afficher les options d'hex de destination
-//                System.out.println("Options d'hex de destination :");
-//                for (int i = 0; i < listeHexDestination.size(); i++) {
-//                    Hex hex = listeHexDestination.get(i);
-//                    System.out.println(i + 1 + ". Hex (" + hex.getCoordonnees().get(0) + ", " + hex.getCoordonnees().get(1) + ")");
-//                }
-//
-//                // Choix de l'hex de destination
-//                Hex hexDestination = null;
-//                while (hexDestination == null) {
-//                    try {
-//                        System.out.println("Choisissez un hex de destination (numéro) :");
-//                        int choix = Integer.parseInt(scanner.nextLine().trim()) - 1;
-//                        if (choix >= 0 && choix < listeHexDestination.size()) {
-//                            hexDestination = listeHexDestination.get(choix);
-//                        } else {
-//                            System.out.println("Choix invalide. Réessayez.");
-//                        }
-//                    } catch (NumberFormatException e) {
-//                        System.out.println("Entrée invalide. Veuillez entrer un nombre.");
-//                    }
-//                }
-//
-//                // Nombre de vaisseaux à déplacer
-//                long nbVaisseauxDeplacables = hexCourant.getListVaisseaux().stream()
-//                        .filter(v -> !listVaisseauDeplaces.contains(v))
-//                        .count();
-//                int nbVaisseaux = -1;
-//                while (nbVaisseaux < 0 || nbVaisseaux > nbVaisseauxDeplacables) {
-//                    try {
-//                        System.out.println("Combien de vaisseaux voulez-vous déplacer ? (max : " + nbVaisseauxDeplacables + ")");
-//                        nbVaisseaux = Integer.parseInt(scanner.nextLine().trim());
-//                        if (nbVaisseaux < 0 || nbVaisseaux > nbVaisseauxDeplacables) {
-//                            System.out.println("Nombre invalide. Veuillez entrer un nombre entre 0 et " + nbVaisseauxDeplacables + ".");
-//                        }
-//                    } catch (NumberFormatException e) {
-//                        System.out.println("Entrée invalide. Veuillez entrer un nombre.");
-//                    }
-//                }
-//
-//                // Déplacer les vaisseaux
-//                int vaisseauxAjoutes = 0;
-//                for (Vaisseau v : hexCourant.getListVaisseaux()) {
-//                    if (!listVaisseauDeplaces.contains(v) && vaisseauxAjoutes < nbVaisseaux) {
-//                        listVaisseauDeplaces.add(v);
-//                        hexDestination.getListVaisseaux().add(v);
-//                        hexCourant.getListVaisseaux().remove(v);
-//                        vaisseauxAjoutes++;
-//                    }
-//                }
-//                System.out.println(nbVaisseaux + " vaisseaux déplacés vers l'hex (" + hexDestination.getCoordonnees().get(0)
-//                        + ", " + hexDestination.getCoordonnees().get(1) + ").");
-//
-//                // Vérification pour continuer ou s'arrêter
-//                if (hexDestination.isTriPrim()) {
-//                    System.out.println("L'hex destination est TriPrim. Vous ne pouvez pas continuer le déplacement.");
-//                    continuerDeplacer = false;
-//                    break;
-//                }
-//
-//                System.out.println("Voulez-vous déplacer depuis cet hex ? (oui/non)");
-//                String reponse = scanner.nextLine().trim().toLowerCase();
-//                if (!reponse.equals("oui")) {
-//                    continuerDeplacer = false;
-//                    break;
-//                }
-//
-//                // Mise à jour pour le prochain tour
-//                hexCourant = hexDestination;
-//            }
-//        }
-//    }
+
 
 
     public void attaquerHex(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listeVaisseauUtilises) {
         Scanner scanner = new Scanner(System.in);
         List<Hex> hexAttaquables = new ArrayList<>();
+
+        System.out.println("Souhaitez-vous attaquer un Hex ? (oui/non)");
+        String reponse = scanner.nextLine().trim().toLowerCase();
+        if (!reponse.equals("oui")) {
+            System.out.println("Aucun Hex attaqué.");
+            return;
+        }
 
         // Parcourir les hex des vaisseaux du joueur et trouver les hex voisins
         for (Vaisseau vaisseau : this.getListeVaisseaux()) {
@@ -331,12 +383,6 @@ public class JoueurPhysique extends Joueur{
                     .filter(voisin -> this.equals(voisin.getOccupant())) // Hex voisin occupé par le joueur
                     .allMatch(voisin -> !voisin.getListVaisseaux().isEmpty() &&
                             voisin.getListVaisseaux().stream().allMatch(listeVaisseauUtilises::contains)); // Tous les vaisseaux utilisés
-            // Debugging pour comprendre pourquoi un hex est retiré
-            System.out.println("Hex : (" + hex.getCoordonnees().get(0) + ", " + hex.getCoordonnees().get(1) + ")");
-            System.out.println("  Contrôlé par joueur : " + estControleParJoueur);
-            System.out.println("  Capacité invalide : " + capaciteInvalide);
-            System.out.println("  Tous les vaisseaux voisins déjà utilisés : " + tousVaisseauxUtilises);
-
 
             // Retirer l'hex s'il satisfait une des conditions d'exclusion
             return estControleParJoueur || capaciteInvalide || tousVaisseauxUtilises;
@@ -429,6 +475,17 @@ public class JoueurPhysique extends Joueur{
                             vaisseauxAUtiliser = Integer.parseInt(saisieUtilisateur);
 
                             if (vaisseauxAUtiliser >= 0 && vaisseauxAUtiliser <= vaisseauxDisponibles) {
+                                // Ajouter les vaisseaux utilisés à la liste
+                                listeVaisseauUtilisesCeTour = new ArrayList<>();
+                                int vaisseauxAjoutes = 0;
+                                for (Vaisseau v : voisin.getListVaisseaux()) {
+                                    if (!listeVaisseauUtilises.contains(v) && vaisseauxAjoutes < vaisseauxAUtiliser) {
+                                        listeVaisseauUtilisesCeTour.add(v);
+                                        listeVaisseauUtilises.add(v);
+                                        vaisseauxAjoutes++;
+                                        System.out.println("Un vaisseau a été déplacé");
+                                    }
+                                }
                                 break; // Sortir de la boucle si l'entrée est valide
                             } else {
                                 System.out.println("Nombre invalide. Veuillez entrer un nombre entre 0 et " + vaisseauxDisponibles + ".");
@@ -439,19 +496,8 @@ public class JoueurPhysique extends Joueur{
                     }
 
 
-                    // Ajouter les vaisseaux utilisés à la liste
-                    listeVaisseauUtilisesCeTour = new ArrayList<>();
-                    int vaisseauxAjoutes = 0;
-                    for (Vaisseau v : voisin.getListVaisseaux()) {
-                        if (!listeVaisseauUtilises.contains(v) && vaisseauxAjoutes < vaisseauxAUtiliser) {
-                            listeVaisseauUtilisesCeTour.add(v);
-                            listeVaisseauUtilises.add(v);
-                            vaisseauxAjoutes++;
-                        }
-                    }
                     if (listeVaisseauUtilisesCeTour.isEmpty()) {
                         System.out.println("Aucun vaisseau n'a été utilisé pour attaquer.");
-                       return;
                     }
                 }
             }
@@ -527,14 +573,7 @@ public class JoueurPhysique extends Joueur{
         return hexChoisi;
     }
 
-
-
     public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
-
-        Partie partie= new Partie();
-        partie.commencerPartie();
 
 	}
 

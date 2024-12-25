@@ -1,10 +1,12 @@
 package pocketImperium;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-public class JoueurVirtuel extends Joueur{
+public class JoueurVirtuel extends Joueur implements Serializable {
 	
 	public JoueurVirtuel (String nom,String couleur,int ordreDeJeu) {
 
@@ -48,10 +50,6 @@ public class JoueurVirtuel extends Joueur{
                 hexChoisi.getCoordonnees().get(1) + ").");
     }
 
-
-    public void deplacer(ArrayList<Hex> listeHex,ArrayList<Vaisseau> listVaisseauDeplaces) {
-        System.out.println(this.getNom()+"  a déplacer une flotte");
-    }
 
     public void attaquerHex(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listeVaisseauUtilises) {
         Random random = new Random();
@@ -137,7 +135,7 @@ public class JoueurVirtuel extends Joueur{
         this.resoudreConflit(hexCible);
     }
 
-
+    //TODO mettre en random
     public void ordonnerCarte(){
         ArrayList<Carte> liste1 = new ArrayList<>();
         liste1.add(Carte.Expand);
@@ -200,6 +198,106 @@ public class JoueurVirtuel extends Joueur{
         return hexChoisi;
     }
 
+    public void deplacer(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listVaisseauDeplaces) {
+        Random random = new Random(); // Initialisation du Random localement
+        ArrayList<Vaisseau> listeVaisseauxDeplacesCeTour = new ArrayList<>();
+        int nbDeplacement = 1;
+
+        // Choisir automatiquement si déplacer une flotte
+        System.out.println("Déplacement d'une flotte choisi.");
+
+        // Création de la liste des hex de départ
+        ArrayList<Hex> listeHexDepart = new ArrayList<>();
+        for (Hex hex : listeHex) {
+            if (hex.getListVaisseaux().stream().anyMatch(v -> this.equals(v.getJoueur()))) {
+                listeHexDepart.add(hex);
+            }
+        }
+
+        // Filtrage des hex de départ
+        listeHexDepart.removeIf(hex -> {
+            boolean tousVoisinsOccupesParEnnemis = hex.getListeHexesVoisins().stream()
+                    .allMatch(voisin -> voisin.getOccupant() != null && !this.equals(voisin.getOccupant()));
+            boolean tousVaisseauxDejaDeplaces = !listVaisseauDeplaces.isEmpty() && hex.getListVaisseaux().stream()
+                    .allMatch(listVaisseauDeplaces::contains);
+            return tousVoisinsOccupesParEnnemis || tousVaisseauxDejaDeplaces;
+        });
+
+        if (listeHexDepart.isEmpty()) {
+            System.out.println("Aucun hex disponible pour commencer un déplacement.");
+            return;
+        }
+
+        // Sélection aléatoire d'un hex de départ
+        Hex hexCourant = listeHexDepart.get(random.nextInt(listeHexDepart.size()));
+        System.out.println("Hex de départ choisi : (" + hexCourant.getCoordonnees().get(0) + ", " + hexCourant.getCoordonnees().get(1) + ")");
+
+        while (nbDeplacement <= 2) {
+            switch (nbDeplacement) {
+                case 1 -> {
+                    Hex hexDestination = choisirDestinationAleatoire(hexCourant, listVaisseauDeplaces, random);
+                    if (hexDestination == null) return; // Aucun déplacement possible
+                    int nbVaisseaux=deplacerVaisseaux(hexCourant, hexDestination, listeVaisseauxDeplacesCeTour, listVaisseauDeplaces, random);
+                    if(nbVaisseaux==0){
+                        return;
+                    }
+                    if (hexDestination.isEstTriprim()) {
+                        System.out.println("L'hex destination est TriPrim. Vous ne pouvez pas continuer le déplacement.");
+                        return;
+                    }
+                    hexCourant = hexDestination; // Mise à jour pour le prochain tour
+                    nbDeplacement++;
+                }
+                case 2 -> {
+                    Hex hexDestination = choisirDestinationAleatoire(hexCourant, listVaisseauDeplaces, random);
+                    if (hexDestination == null) return; // Aucun déplacement possible
+                    int nbVaisseaux2=deplacerVaisseaux(hexCourant, hexDestination, listeVaisseauxDeplacesCeTour, listVaisseauDeplaces, random);
+                    System.out.println("Deuxième déplacement effectué. Fin de l'action.");
+                    return;
+                }
+            }
+        }
+    }
+
+    private Hex choisirDestinationAleatoire(Hex hexCourant, ArrayList<Vaisseau> listVaisseauDeplaces, Random random) {
+        ArrayList<Hex> listeHexDestination = new ArrayList<>(hexCourant.getListeHexesVoisins());
+        listeHexDestination.removeIf(hex -> !this.equals(hex.getOccupant()) && hex.getOccupant() != null);
+
+        if (listeHexDestination.isEmpty()) {
+            System.out.println("Aucun hex de destination disponible depuis cet hex.");
+            return null;
+        }
+
+        // Choisir une destination aléatoire parmi les options disponibles
+        Hex hexDestination = listeHexDestination.get(random.nextInt(listeHexDestination.size()));
+        System.out.println("Hex de destination choisi : (" + hexDestination.getCoordonnees().get(0) + ", " + hexDestination.getCoordonnees().get(1) + ")");
+        return hexDestination;
+    }
+
+    private int deplacerVaisseaux(Hex hexCourant, Hex hexDestination, ArrayList<Vaisseau> listeVaisseauxDeplacesCeTour, ArrayList<Vaisseau> listeVaisseauxDeplaces, Random random) {
+        long nbVaisseauxDeplacables = hexCourant.getListVaisseaux().stream()
+                .filter(v -> !listeVaisseauxDeplaces.contains(v))
+                .count();
+
+        int nbVaisseaux = random.nextInt((int) nbVaisseauxDeplacables + 1); // Choisir un nombre aléatoire de vaisseaux à déplacer
+
+        int vaisseauxAjoutes = 0;
+        Iterator<Vaisseau> iterator = hexCourant.getListVaisseaux().iterator();
+        while (iterator.hasNext() && vaisseauxAjoutes < nbVaisseaux) {
+            Vaisseau v = iterator.next();
+            if (!listeVaisseauxDeplaces.contains(v)) {
+                listeVaisseauxDeplacesCeTour.add(v);
+                hexDestination.getListVaisseaux().add(v);
+                iterator.remove(); // Supprime de hexCourant
+                v.setHex(hexDestination);
+                vaisseauxAjoutes++;
+            }
+        }
+
+        System.out.println(nbVaisseaux + " vaisseaux déplacés vers l'hex (" + hexDestination.getCoordonnees().get(0)
+                + ", " + hexDestination.getCoordonnees().get(1) + ").");
+        return nbVaisseaux;
+    }
 
 
 }

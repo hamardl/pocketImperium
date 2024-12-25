@@ -1,5 +1,7 @@
 package pocketImperium;
 
-public enum Carte {
+import java.io.Serializable;
+
+public enum Carte implements Serializable {
 	Expand,Explore,Exterminate 
 }

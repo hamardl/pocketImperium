@@ -1,6 +1,8 @@
 package pocketImperium;
 
-public class Vaisseau {
+import java.io.Serializable;
+
+public class Vaisseau implements Serializable {
 
 	private Joueur joueur;
 	private int numero;

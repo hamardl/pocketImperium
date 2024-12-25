@@ -1,9 +1,10 @@
 package pocketImperium;
 
+import java.io.Serializable;
 import java.util.*;
 
 
-public abstract class Joueur {
+public abstract class Joueur implements Serializable {
 	
     private String nom;
     protected String couleur;
@@ -194,12 +195,6 @@ public abstract class Joueur {
         return nbJoueurJoueCarte;
     }
 
-
-
-    //compter le nombre de vaissezau à chaque fin de tour si =0 alors partie finie
-    public void compterVaisseaux() {
-
-    }
 
 
 	public static void main(String[] args) {

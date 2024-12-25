@@ -1,8 +1,9 @@
 package pocketImperium;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Secteur {
+public class Secteur implements Serializable {
 
     // Attribut
     private ArrayList<Hex> listeHex;

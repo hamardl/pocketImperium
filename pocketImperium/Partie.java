@@ -1,24 +1,26 @@
 package pocketImperium;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.*;
 
-public class Partie {
+public class Partie implements Serializable {
 	// Attributs de la classe
 	private PlateauDeJeu plateauDeJeu;  // Plateau de jeu
 	private ArrayList<Joueur> listeJoueur;  // Liste des joueurs
-	private Tour tour;
+	private Tour tour=null;
 
 	// Constructeur
 	public Partie() {
 		this.plateauDeJeu = new PlateauDeJeu();
 		this.listeJoueur=this.creationJoueur();
 	}
+	public Partie(int number) {
+	}
 
 	// Getter pour plateauDeJeu
 	public PlateauDeJeu getPlateauDeJeu() {
 		return plateauDeJeu;
-
 	}
 
 	// Setter pour plateauDeJeu
@@ -32,7 +34,7 @@ public class Partie {
 	}
 
 	// Setter pour tour
-	public void setPlateauDeJeu(Tour tour) {
+	public void setTour(Tour tour) {
 		this.tour = tour;
 	}
 
@@ -46,21 +48,65 @@ public class Partie {
 		this.listeJoueur = listeJoueur;
 	}
 
-	public void commencerPartie() {
-		this.initialisation();
-		for (int i = 0; i < 9; i++) {
-			System.out.println("\n\nDébut du tour numéro "+(i+1)+"\n");
-			Tour tour = new Tour(this.getListeJoueur(),(i+1));
-			tour.gestionTour(this.plateauDeJeu);
+
+	public static Partie gererDebutPartie(String cheminSauvegarde) {
+		Scanner scanner = new Scanner(System.in);
+
+		// Vérifie si une sauvegarde existe
+		File fichierSauvegarde = new File(cheminSauvegarde);
+		if (fichierSauvegarde.exists()) {
+			System.out.println("Une sauvegarde existante a été détectée.");
+			System.out.println("Voulez-vous reprendre la dernière partie ou commencer une nouvelle ? (reprendre/nouvelle)");
+			String choix = scanner.nextLine().trim().toLowerCase();
+
+			while (!choix.equals("reprendre") && !choix.equals("nouvelle")) {
+				System.out.println("Choix invalide. Veuillez entrer 'reprendre' ou 'nouvelle'.");
+				choix = scanner.nextLine().trim().toLowerCase();
+			}
+
+			if (choix.equals("reprendre")) {
+				Partie partieChargee = chargerPartie();
+				if (partieChargee != null) {
+					System.out.println("Partie chargée avec succès !");
+					return partieChargee;
+				} else {
+					System.out.println("Erreur lors du chargement de la sauvegarde. Une nouvelle partie sera lancée.");
+				}
+			} else {
+				System.out.println("Commencement d'une nouvelle partie. La sauvegarde existante sera supprimée.");
+				fichierSauvegarde.delete(); // Supprime l'ancienne sauvegarde
+			}
+		} else {
+			System.out.println("Aucune sauvegarde existante. Une nouvelle partie sera commencée.");
 		}
+
+		// Création d'une nouvelle partie
+		Partie nouvellePartie = new Partie();
+		System.out.println("Nouvelle partie commencée !");
+		return nouvellePartie;
 	}
-	
-	public void quitterPartie() {
-		
+
+
+	public static Partie chargerPartie() {
+		Partie partie = new Partie(1);
+		try {
+			FileInputStream fis  = new FileInputStream("Partie.obj");
+			ObjectInputStream ois  = new ObjectInputStream(fis);
+			partie=(Partie)ois.readObject();
+			fis.close();
+		}
+		catch (IOException e) {e.printStackTrace();}
+   		catch (ClassNotFoundException e1) {e1.printStackTrace();}
+		return partie;
 	}
 	
 	public void sauvgarderPartie(){
-		
+		try {
+			FileOutputStream fos = new FileOutputStream("Partie.obj");
+			ObjectOutputStream oos = new ObjectOutputStream(fos);
+			oos.writeObject(this);
+			fos.close();
+		} catch (IOException e) {e.printStackTrace();}
 	}
 
 	public ArrayList<Joueur> creationJoueur() {
@@ -167,8 +213,6 @@ public class Partie {
 	}
 
 
-
-
 	public void initialisation() {
 		// Vérification du nombre de joueurs
 		if (this.listeJoueur.size() != 3) {
@@ -196,6 +240,20 @@ public class Partie {
 			traiterChoixHex(joueursOrdonnes.get(i), secteursDejaChoisis);
 		}
 	}
+
+	public void supprimerSauvegarde(String cheminSauvegarde) {
+		File fichierSauvegarde = new File(cheminSauvegarde);
+		if (fichierSauvegarde.exists()) {
+			if (fichierSauvegarde.delete()) {
+				System.out.println("Fichier de sauvegarde supprimé avec succès.");
+			} else {
+				System.out.println("Erreur : Impossible de supprimer le fichier de sauvegarde.");
+			}
+		} else {
+			System.out.println("Aucun fichier de sauvegarde trouvé à l'emplacement : " + cheminSauvegarde);
+		}
+	}
+
 
 	/**
 	 * Méthode utilitaire pour gérer le choix d'un hex pour un joueur donné.
@@ -230,10 +288,31 @@ public class Partie {
 					hexChoisi.getCoordonnees().get(0) + ", " + hexChoisi.getCoordonnees().get(1) + ".");
 	}
 
+	public void reprendrePartie(){
+		if(this.getTour()==null){
+			this.initialisation();
+			System.out.println("\n\nDébut du tour numéro "+(1)+"\n");
+			Tour tour = new Tour(this.getListeJoueur(),(1),this);
+			this.setTour(tour);
+			tour.gestionTour(this.plateauDeJeu);
+			this.sauvgarderPartie();
+		}
+		for (int i =this.getTour().getNumero(); i < 9; i++) {
+			System.out.println("\n\nDébut du tour numéro "+(i+1)+"\n");
+			Tour tour = new Tour(this.getListeJoueur(),(i+1),this);
+			this.setTour(tour);
+			tour.gestionTour(this.plateauDeJeu);
+			this.sauvgarderPartie();
+		}
+	}
 
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		String cheminSauvegarde = "C:\\dossier\\LO02\\PocketImperieum\\src"; // Chemin de la sauvegarde
+		Partie partieActuelle = gererDebutPartie(cheminSauvegarde);
+
+		// Démarrage du jeu avec partieActuelle
+		partieActuelle.reprendrePartie();
 
 	}
 
