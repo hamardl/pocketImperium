@@ -94,9 +94,9 @@ public abstract class Joueur implements Serializable {
         this.listeJoueur = listeJoueur;
     }
         
-        public abstract void ajouterVaisseau(ArrayList<Hex> listeHex);
-        public abstract void deplacer(ArrayList<Hex> listeHex,ArrayList<Vaisseau> listeVaisseauDeplaces);
-        public abstract void attaquerHex(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listeVaisseauUtilises);
+        public abstract void ajouterVaisseau(ArrayList<Hex> listeHex,PlateauDeJeu pdj);
+        public abstract void deplacer(ArrayList<Hex> listeHex,ArrayList<Vaisseau> listeVaisseauDeplaces,PlateauDeJeu pdj);
+        public abstract void attaquerHex(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listeVaisseauUtilises,PlateauDeJeu pdj);
         public abstract void ordonnerCarte();
         public abstract Secteur choisirSecteur(ArrayList<Secteur> listeSecteurs);
         public abstract Hex choisirHexDepart(ArrayList<Secteur> secteursDejaChoisis, ArrayList<Hex> listeHex);
@@ -165,20 +165,20 @@ public abstract class Joueur implements Serializable {
             if (carte.equals(Carte.Expand)) {
                 System.out.println("\n"+this.getNom()+" joue Expand .");
                 for (int i = 0; i < 3 - nbJoueurJoueCarte+1; i++) {
-                    this.ajouterVaisseau(pdj.getListeHex()); // Ajouter un vaisseau
+                    this.ajouterVaisseau(pdj.getListeHex(),pdj); // Ajouter un vaisseau
                 }
             } else if (carte.equals(Carte.Explore)) {
                 System.out.println("\n"+this.getNom()+" joue Explore .");
                 ArrayList<Vaisseau> vaisseauxDeplaces = new ArrayList<>(); // Liste des vaisseaux déplacés
                 for (int i = 0; i < 3 - nbJoueurJoueCarte+1; i++) {
-                    this.deplacer(pdj.getListeHex(),vaisseauxDeplaces); // Déplacer un vaisseau
+                    this.deplacer(pdj.getListeHex(),vaisseauxDeplaces,pdj); // Déplacer un vaisseau
                 }
                 vaisseauxDeplaces=null;
             } else if (carte.equals(Carte.Exterminate)) {
                 System.out.println("\n"+this.getNom()+" joue Exterminate .");
                 ArrayList<Vaisseau> vaisseauxUtilises = new ArrayList<>(); // Liste des vaisseaux déplacés
                 for (int i = 0; i < 3 - nbJoueurJoueCarte+1; i++) {
-                    this.attaquerHex(pdj.getListeHex(),vaisseauxUtilises); // Attaquer un Hex
+                    this.attaquerHex(pdj.getListeHex(),vaisseauxUtilises,pdj); // Attaquer un Hex
                 }
                 vaisseauxUtilises=null;
             }

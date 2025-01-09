@@ -1,10 +1,7 @@
 package pocketImperium;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class JoueurVirtuel extends Joueur implements Serializable {
 	
@@ -14,7 +11,7 @@ public class JoueurVirtuel extends Joueur implements Serializable {
 	}
 
 
-    public void ajouterVaisseau(ArrayList<Hex> listeHex) {
+    public void ajouterVaisseau(ArrayList<Hex> listeHex, PlateauDeJeu pdj) {
         // Vérification du nombre de vaisseaux du bot
         if (this.getListeVaisseaux().size() >= 15) {
             System.out.println(this.getNom() + " a déjà 15 vaisseaux. Il ne peut pas en ajouter davantage.");
@@ -51,7 +48,7 @@ public class JoueurVirtuel extends Joueur implements Serializable {
     }
 
 
-    public void attaquerHex(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listeVaisseauUtilises) {
+    public void attaquerHex(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listeVaisseauUtilises,PlateauDeJeu pdj) {
         Random random = new Random();
         List<Hex> hexAttaquables = new ArrayList<>();
 
@@ -135,14 +132,18 @@ public class JoueurVirtuel extends Joueur implements Serializable {
         this.resoudreConflit(hexCible);
     }
 
-    //TODO mettre en random
-    public void ordonnerCarte(){
+    public void ordonnerCarte() {
         ArrayList<Carte> liste1 = new ArrayList<>();
         liste1.add(Carte.Expand);
         liste1.add(Carte.Explore);
         liste1.add(Carte.Exterminate);
+
+        // Mélange la liste pour obtenir un ordre aléatoire
+        Collections.shuffle(liste1);
+
         this.setListeDeCarteOrdonnee(liste1);
     }
+
     public Secteur choisirSecteur(ArrayList<Secteur> listeSecteurs){
         // Vérification si la liste n'est pas vide
         if (listeSecteurs == null || listeSecteurs.isEmpty()) {
@@ -198,7 +199,7 @@ public class JoueurVirtuel extends Joueur implements Serializable {
         return hexChoisi;
     }
 
-    public void deplacer(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listVaisseauDeplaces) {
+    public void deplacer(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listVaisseauDeplaces,PlateauDeJeu pdj) {
         Random random = new Random(); // Initialisation du Random localement
         ArrayList<Vaisseau> listeVaisseauxDeplacesCeTour = new ArrayList<>();
         int nbDeplacement = 1;

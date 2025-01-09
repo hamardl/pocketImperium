@@ -13,6 +13,7 @@ public class PlateauDeJeu implements Serializable {
 	private ArrayList<Hex> listeHex;         // Liste des Hex sur le plateau
 	private ArrayList<Secteur> listeSecteur; // Liste des Vaisseaux sur le plateau
 
+
 	// Constructeur
 	public PlateauDeJeu() {
 		ArrayList<Hex> listeHex = new ArrayList<>();
@@ -211,6 +212,7 @@ public class PlateauDeJeu implements Serializable {
 		Secteur secteur9 = new Secteur(creerZonesHex().get(8),"Secteur9");
 		listeSecteur.add(secteur9);
 
+
 	}
 
 /**
@@ -308,6 +310,29 @@ public class PlateauDeJeu implements Serializable {
 
 		return zones;
 	}
+
+	/**
+	 * Méthode qui parcourt tous les hexagones du plateau et affiche une description
+	 * pour chaque hexagone contenant des vaisseaux.
+	 * La description inclut les coordonnées de l'hexagone, le propriétaire des vaisseaux,
+	 * et le nombre de vaisseaux.
+	 */
+	public void decrirePlateau() {
+		// Parcourir tous les hexagones de la liste
+		System.out.println("\n\n--Etat du plateau de Jeu");
+		System.out.println("\n Les coordonnees du Tri-Prime sont 4 3 .\n");
+		for (Hex hex : listeHex) {
+			// Vérifier si l'hexagone contient des vaisseaux
+			if (!hex.getListVaisseaux().isEmpty()) {
+				// Récupérer le propriétaire des vaisseaux (le joueur du premier vaisseau)
+				Joueur proprietaire = hex.getOccupant();
+				// Afficher les informations de l'hexagone
+				System.out.println("Hex " + hex.getCoordonnees() +" : Propriétaire = " + (proprietaire != null ? proprietaire.getNom() : "Inconnu") + ", Nombre de vaisseaux = " + hex.getListVaisseaux().size());
+			}
+		}
+		System.out.println("\n");
+	}
+
 
 
 	public static void main(String[] args) {

@@ -9,6 +9,7 @@ public class Partie implements Serializable {
 	private PlateauDeJeu plateauDeJeu;  // Plateau de jeu
 	private ArrayList<Joueur> listeJoueur;  // Liste des joueurs
 	private Tour tour=null;
+	private Vue vue;
 
 	// Constructeur
 	public Partie() {
@@ -227,6 +228,7 @@ public class Partie implements Serializable {
 		// Liste des secteurs déjà choisis
 		ArrayList<Secteur> secteursDejaChoisis = new ArrayList<>();
 
+		this.vue.afficherImage("C:\\dossier\\LO02\\PlateauJeu.PNG");
 		// Première boucle : Ordre croissant
 		System.out.println("\n\nChoix de placement des vaisseaux de départ");
 		System.out.println("\nDans l'ordre croissant : ");
@@ -238,19 +240,6 @@ public class Partie implements Serializable {
 		System.out.println("\nDans l'ordre décroissant : ");
 		for (int i = joueursOrdonnes.size() - 1; i >= 0; i--) {
 			traiterChoixHex(joueursOrdonnes.get(i), secteursDejaChoisis);
-		}
-	}
-
-	public void supprimerSauvegarde(String cheminSauvegarde) {
-		File fichierSauvegarde = new File(cheminSauvegarde);
-		if (fichierSauvegarde.exists()) {
-			if (fichierSauvegarde.delete()) {
-				System.out.println("Fichier de sauvegarde supprimé avec succès.");
-			} else {
-				System.out.println("Erreur : Impossible de supprimer le fichier de sauvegarde.");
-			}
-		} else {
-			System.out.println("Aucun fichier de sauvegarde trouvé à l'emplacement : " + cheminSauvegarde);
 		}
 	}
 
@@ -289,16 +278,17 @@ public class Partie implements Serializable {
 	}
 
 	public void reprendrePartie(){
+		this.vue.afficherImage("C:\\dossier\\LO02\\PlateauJeu.PNG");
 		if(this.getTour()==null){
 			this.initialisation();
-			System.out.println("\n\nDébut du tour numéro "+(1)+"\n");
+			System.out.println("\n\n-Début du tour numéro "+(1)+"\n");
 			Tour tour = new Tour(this.getListeJoueur(),(1),this);
 			this.setTour(tour);
 			tour.gestionTour(this.plateauDeJeu);
 			this.sauvgarderPartie();
 		}
 		for (int i =this.getTour().getNumero(); i < 9; i++) {
-			System.out.println("\n\nDébut du tour numéro "+(i+1)+"\n");
+			System.out.println("\n\n-" + "Début du tour numéro "+(i+1)+"\n");
 			Tour tour = new Tour(this.getListeJoueur(),(i+1),this);
 			this.setTour(tour);
 			tour.gestionTour(this.plateauDeJeu);
@@ -308,7 +298,7 @@ public class Partie implements Serializable {
 
 
 	public static void main(String[] args) {
-		String cheminSauvegarde = "C:\\dossier\\LO02\\PocketImperieum\\src"; // Chemin de la sauvegarde
+		String cheminSauvegarde = "C:\\dossier\\LO02\\PocketImperieum\\src\\Partie.obj"; // Chemin de la sauvegarde
 		Partie partieActuelle = gererDebutPartie(cheminSauvegarde);
 
 		// Démarrage du jeu avec partieActuelle

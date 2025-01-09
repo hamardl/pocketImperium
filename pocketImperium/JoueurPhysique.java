@@ -45,7 +45,7 @@ public class JoueurPhysique extends Joueur implements Serializable {
                 }
             } catch (IllegalArgumentException e) {
                 // La carte entrée n'est pas valide
-                System.out.println("Carte invalide. Les options disponibles sont : Expander, Explorer, Exterminator.");
+                System.out.println("Carte invalide. Les options disponibles sont : Expand, Explore, Exterminate.");
             }
         }
         return carte;
@@ -88,7 +88,7 @@ public class JoueurPhysique extends Joueur implements Serializable {
         return secteurChoisi;
     }
 
-    public void ajouterVaisseau(ArrayList<Hex> listeHex) {
+    public void ajouterVaisseau(ArrayList<Hex> listeHex,PlateauDeJeu pdj) {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Souhaitez-vous ajouter un Vaisseau ? (oui/non)");
@@ -98,6 +98,7 @@ public class JoueurPhysique extends Joueur implements Serializable {
             return;
         }
 
+        pdj.decrirePlateau();
         // Vérification du nombre de vaisseaux du joueur
         if (this.getListeVaisseaux().size() >= 15) {
             System.out.println("Vous avez déjà 15 vaisseaux. Vous ne pouvez pas en ajouter davantage.");
@@ -163,7 +164,7 @@ public class JoueurPhysique extends Joueur implements Serializable {
 //        System.out.println(this.getNom()+"  a déplacer une flotte");
 //    }
 
-    public void deplacer(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listVaisseauDeplaces) {
+    public void deplacer(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listVaisseauDeplaces,PlateauDeJeu pdj) {
 
         Scanner scanner = new Scanner(System.in);
         ArrayList<Vaisseau> listeVaisseauxDeplacesCeTour = new ArrayList<>(); // Nouvelle liste temporaire
@@ -175,7 +176,7 @@ public class JoueurPhysique extends Joueur implements Serializable {
             System.out.println("Aucune flotte déplacée.");
             return;
         }
-
+        pdj.decrirePlateau();
         // Création de la liste des hex de départ
         ArrayList<Hex> listeHexDepart = new ArrayList<>();
         for (Hex hex : listeHex) {
@@ -349,7 +350,7 @@ public class JoueurPhysique extends Joueur implements Serializable {
 
 
 
-    public void attaquerHex(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listeVaisseauUtilises) {
+    public void attaquerHex(ArrayList<Hex> listeHex, ArrayList<Vaisseau> listeVaisseauUtilises,PlateauDeJeu pdj) {
         Scanner scanner = new Scanner(System.in);
         List<Hex> hexAttaquables = new ArrayList<>();
 
@@ -359,7 +360,7 @@ public class JoueurPhysique extends Joueur implements Serializable {
             System.out.println("Aucun Hex attaqué.");
             return;
         }
-
+        pdj.decrirePlateau();
         // Parcourir les hex des vaisseaux du joueur et trouver les hex voisins
         for (Vaisseau vaisseau : this.getListeVaisseaux()) {
             Hex hex = vaisseau.getHex();
